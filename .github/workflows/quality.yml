@@ -1,0 +1,57 @@
+name: Quality and security checks
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check project scaffold
+        id: scaffold
+        shell: bash
+        run: |
+          if [ -f package.json ] && [ -f package-lock.json ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::warning title=Next.js scaffold missing::Initialize package.json and package-lock.json in the platform task; application CI is not yet active"
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/setup-node@v4
+        if: steps.scaffold.outputs.ready == 'true'
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install dependencies
+        if: steps.scaffold.outputs.ready == 'true'
+        run: npm ci
+      - name: Verify quality gates
+        if: steps.scaffold.outputs.ready == 'true'
+        shell: bash
+        run: |
+          set +e
+          failed=0
+          for script in format:check lint typecheck test build; do
+            if node -e "process.exit(require('./package.json').scripts?.['$script'] ? 0 : 1)"; then
+              echo "::group::$script"
+              npm run "$script" >"$RUNNER_TEMP/${script//:/-}.log" 2>&1
+              status=$?
+              cat "$RUNNER_TEMP/${script//:/-}.log"
+              node scripts/annotate-log.mjs "$RUNNER_TEMP/${script//:/-}.log" "$script"
+              if [ "$status" -ne 0 ]; then
+                echo "::error title=$script failed::Inspect job log for details"
+                failed=1
+              fi
+              echo "::endgroup::"
+            else
+              echo "::error title=Missing required script::$script is not defined in package.json"
+              failed=1
+            fi
+          done
+          exit "$failed"
+      - name: Audit production dependencies
+        if: steps.scaffold.outputs.ready == 'true'
+        run: npm audit --omit=dev --audit-level=high
