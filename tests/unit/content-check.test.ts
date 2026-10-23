@@ -3,6 +3,8 @@ import { content } from '@/config/content';
 import { findPlaceholders } from '@/lib/content-check';
 
 describe('findPlaceholders (ADR-004 / FR-005)', () => {
+  // This pre-publish gate runs only via `npm run check:content` (npm sets npm_lifecycle_event).
+  // It is intentionally skipped in `npm test` and must run and pass before any production deploy (ADR-004).
   it.skipIf(process.env.npm_lifecycle_event !== 'check:content')(
     'requires all content to be confirmed before publishing',
     () => {
