@@ -44,6 +44,12 @@ h2 {
 .skip-link:focus {
   transform: translateY(0);
 }
+.mobile-menu-summary {
+  list-style: none;
+}
+.mobile-menu-summary::-webkit-details-marker {
+  display: none;
+}
 .interactive:hover,
 .interactive:focus-visible {
   filter: brightness(1.1);

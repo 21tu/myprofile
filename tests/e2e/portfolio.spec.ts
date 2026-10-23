@@ -91,13 +91,6 @@ for (const width of [375, 1440]) {
   test.describe(`navigation and axe ${width}`, () => {
     test.use({ viewport: { width, height: 900 } });
     test('FR-011: navigation reaches every section', async ({ page }) => {
-      // FR-011 / NFR-002, docs/ui-design.md §7: Chromium exposes the menu
-      // summary as generic, not the required named button. Header.tsx:30-35.
-      // Keep the user-facing button contract pending Development Team repair.
-      test.fixme(
-        width === 375,
-        'FR-011 / NFR-002: mobile menu lacks the named button role (src/components/sections/Header.tsx:30)',
-      );
       await page.goto('/');
       for (const heading of sections) {
         if (

@@ -29,9 +29,11 @@ export function Header() {
         <details className="relative md:hidden">
           <summary
             aria-label="ナビゲーションメニュー"
-            className="flex min-h-11 min-w-11 cursor-pointer list-none items-center justify-center text-accent"
+            className="mobile-menu-summary cursor-pointer text-accent"
           >
-            <Menu aria-hidden="true" />
+            <span className="flex min-h-11 min-w-11 items-center justify-center">
+              <Menu aria-hidden="true" />
+            </span>
           </summary>
           <nav
             aria-label="モバイルナビゲーション"

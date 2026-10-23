@@ -116,12 +116,20 @@ describe('UI-DESIGN-001 / FR-002–006, FR-011', () => {
       'contact.vcf',
     );
   });
-  it('uses a native labelled mobile menu and valid navigation anchors', () => {
+  it('FR-011 / NFR-002: uses a native labelled mobile menu and valid navigation anchors', () => {
     const { container } = render(<Home />);
-    expect(container.querySelector('details > summary')).toHaveAttribute(
-      'aria-label',
-      'ナビゲーションメニュー',
+    const summary = screen.getByLabelText('ナビゲーションメニュー');
+    expect(summary).toBe(container.querySelector('details > summary'));
+    expect(summary).toHaveAccessibleName('ナビゲーションメニュー');
+    expect(summary).toHaveClass('mobile-menu-summary');
+    expect(summary).not.toHaveClass('flex');
+    expect(summary).not.toHaveClass('list-none');
+    expect(summary.querySelector(':scope > span')).toHaveClass(
+      'flex',
+      'min-h-11',
+      'min-w-11',
     );
+    expect(summary.querySelector('svg')).toHaveAttribute('aria-hidden', 'true');
     for (const link of container.querySelectorAll('a[href^="#"]'))
       expect(
         document.getElementById(link.getAttribute('href')!.slice(1)),
