@@ -1,5 +1,5 @@
 name: Development task
-about: Work item for Claude Code to delegate to Codex
+description: Work item for Claude Code to delegate to Codex
 labels: []
 body:
   - type: textarea
