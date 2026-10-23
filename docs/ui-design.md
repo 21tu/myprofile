@@ -49,7 +49,8 @@
 2. **Header**（#18）
    - sticky、`navy-950/80` の背景と backdrop blur
    - 左にロゴ（サイト名。`content.site.name`）、右にナビ（Services / About / Skills / Projects / Process / Contact）と「問い合わせ」ボタン
-   - `md` 未満では、ナビを `<details>` / `<summary>` のメニューにする（JS 不要。`summary` に `aria-label`）。問い合わせボタンは常に表示する
+   - `md` 未満では、ナビを **`MobileMenu`（Client Component）** にする。`<button type="button" aria-expanded aria-controls>`（アクセシブルネーム「ナビゲーションメニュー」）で開閉し、Escape キーとリンクのクリックで閉じ、閉じたらフォーカスをボタンに戻す。問い合わせボタンは常に表示する。
+     - 変更履歴（REV-20261024-006 F-001）: 当初は `<details>`/`<summary>` で JS なしの開閉にしていた。しかし `<summary>` は Playwright を含む多くの支援技術の役割の計算で button として扱われず、E2E で操作できなかったため変更した。JS がない環境では、Footer のナビゲーション（全セクションへのリンク）を代わりの手段とする。
 3. **Hero**（#18）
    - **ファーストビュー（375×667）に収めるもの:** 氏名（h1）、肩書き、対応業務（タグを3〜4個）、キャッチコピー、「制作実績を見る」（→ `#projects`）、「問い合わせ」（→ `#contact`）
    - 自己紹介の短い文

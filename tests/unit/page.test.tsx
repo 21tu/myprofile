@@ -118,18 +118,12 @@ describe('UI-DESIGN-001 / FR-002–006, FR-011', () => {
   });
   it('FR-011 / NFR-002: uses a native labelled mobile menu and valid navigation anchors', () => {
     const { container } = render(<Home />);
-    const summary = screen.getByLabelText('ナビゲーションメニュー');
-    expect(summary).toBe(container.querySelector('details > summary'));
-    expect(summary).toHaveAccessibleName('ナビゲーションメニュー');
-    expect(summary).toHaveClass('mobile-menu-summary');
-    expect(summary).not.toHaveClass('flex');
-    expect(summary).not.toHaveClass('list-none');
-    expect(summary.querySelector(':scope > span')).toHaveClass(
-      'flex',
-      'min-h-11',
-      'min-w-11',
-    );
-    expect(summary.querySelector('svg')).toHaveAttribute('aria-hidden', 'true');
+    const button = screen.getByRole('button', {
+      name: 'ナビゲーションメニュー',
+    });
+    expect(button).toHaveAttribute('aria-expanded', 'false');
+    expect(button).toHaveClass('min-h-11', 'min-w-11');
+    expect(button.querySelector('svg')).toHaveAttribute('aria-hidden', 'true');
     for (const link of container.querySelectorAll('a[href^="#"]'))
       expect(
         document.getElementById(link.getAttribute('href')!.slice(1)),
