@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useRef, type ReactNode } from 'react';
-import { motion, useAnimationControls, useReducedMotion } from 'motion/react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { motion, useReducedMotion } from 'motion/react';
 
 export function Reveal({
   children,
@@ -13,7 +13,7 @@ export function Reveal({
   className?: string;
 }) {
   const ref = useRef<HTMLDivElement>(null);
-  const controls = useAnimationControls();
+  const [state, setState] = useState<'idle' | 'hidden' | 'shown'>('idle');
   const reduced = useReducedMotion();
 
   useEffect(() => {
@@ -28,29 +28,34 @@ export function Reveal({
     )
       return;
 
-    controls.set({ opacity: 0, y: 16 });
+    setState('hidden');
     const observer = new IntersectionObserver((entries) => {
       if (!entries.some((entry) => entry.isIntersecting)) return;
-      void controls.start({
-        opacity: 1,
-        y: 0,
-        transition: { duration: 0.5, delay },
-      });
+      setState('shown');
       observer.disconnect();
     });
     observer.observe(element);
     return () => {
       observer.disconnect();
-      controls.stop();
     };
-  }, [controls, delay, reduced]);
+  }, [reduced]);
 
   if (reduced) return <div className={className}>{children}</div>;
   return (
     <motion.div
       ref={ref}
       initial={false}
-      animate={controls}
+      style={state === 'hidden' ? { opacity: 0, y: 16 } : undefined}
+      animate={
+        state === 'idle'
+          ? undefined
+          : state === 'hidden'
+            ? { opacity: 0, y: 16 }
+            : { opacity: 1, y: 0 }
+      }
+      transition={
+        state === 'hidden' ? { duration: 0 } : { duration: 0.5, delay }
+      }
       className={className}
     >
       {children}
