@@ -1,5 +1,5 @@
 import { readdir, readFile, writeFile } from 'node:fs/promises';
-import { buildHeaders } from './lib/csp.mjs';
+import { buildHeaders, extractStyleAttributes } from './lib/csp.mjs';
 
 const root = new URL('../out/', import.meta.url);
 async function walk(directory, prefix = '') {
@@ -19,20 +19,11 @@ const pages = [];
 for (const file of files.filter((file) => file.endsWith('.html'))) {
   const html = await readFile(new URL(file, root), 'utf8');
   pages.push({ file, html });
-  const styles =
-    html.match(/\sstyle\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi) ?? [];
-  if (styles.length)
-    console.warn(
-      `${file}: ${styles.length} inline style attributes blocked by style-src 'self': ${styles.join(', ')}`,
-    );
+  const styles = extractStyleAttributes(html);
+  console.info(
+    `${file}: ${styles.length} inline style attributes, ${new Set(styles).size} unique values allowed by style-src-attr hashes`,
+  );
 }
 if (!pages.length) throw new Error('No exported HTML found in out/');
-await writeFile(
-  new URL('_headers', root),
-  buildHeaders(
-    pages,
-    files.filter((file) => !file.endsWith('.html')),
-  ),
-  'utf8',
-);
+await writeFile(new URL('_headers', root), buildHeaders(pages), 'utf8');
 console.log(`Generated out/_headers for ${pages.length} HTML pages`);

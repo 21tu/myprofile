@@ -12,23 +12,21 @@
 | Permissions-Policy | `camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()`。不要な機能を禁止（ブラウザの対応範囲で有効） |
 | Cross-Origin-Opener-Policy | `same-origin`。別オリジンのウィンドウとの分離 |
 | X-Frame-Options | `DENY`。フレーム埋め込みを禁止 |
-| Content-Security-Policy | HTMLは下記のページ別ポリシー、非HTMLは `default-src 'none'; frame-ancestors 'none'` |
+| Content-Security-Policy | Single global `/*` CSP for all HTML, unknown-path 404 responses and assets |
 
-## CSPの生成と配信
+## CSP generation and delivery
 
-`npm run build` は prebuild → next build → postbuild の順に実行する。`scripts/generate-headers.mjs` が全 `out/**/*.html` のsrc属性のないscript本文を正確に抽出し、SHA-256/base64を計算して `out/_headers` を生成する。本文をtrim・HTMLデコードしない。外部依存の追加はない。生成先はADR-004の `public/_headers` から変更する（ADR-005）。手動編集した成果物は次のビルドで上書きされる。`next build` 単独ではpostbuildが動かないため、必ず `npm run build` を使う。
+`npm run build` runs prebuild, next build and postbuild. `scripts/generate-headers.mjs` reads all `out/**/*.html` and generates `out/_headers`, replacing ADR-004's `public/_headers`. Do not edit generated output. Inline script text is hashed exactly without trimming or HTML decoding. The existing JSDOM parser extracts style attribute values, decoding named and numeric HTML entities before SHA-256/base64 hashing, without executing scripts. Generation logs attribute counts and unique value counts at info level.
 
-HTMLのCSP:
+Exactly one Content-Security-Policy is emitted in the global `/*` block. Script and style attribute hashes are unions across all exported pages, deduplicated and sorted for deterministic output. There are no per-path or asset CSP rules. This covers unknown-path 404 responses served by `not_found_handling` and avoids duplicate header combination under [Cloudflare header matching](https://developers.cloudflare.com/workers/static-assets/headers/).
 
 ```text
-default-src 'none'; script-src 'self' <ページ内scriptのsha256ハッシュ>; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; manifest-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'; upgrade-insecure-requests
+default-src 'none'; script-src 'self' <all exported script hashes>; style-src 'self'; style-src-attr 'unsafe-hashes' <all decoded exported style attribute hashes>; img-src 'self' data:; font-src 'self'; connect-src 'self'; manifest-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'; upgrade-insecure-requests
 ```
 
-script-srcにunsafe-inline/unsafe-evalは使用しない。空scriptも抽出し、同一本文のハッシュはページ内で重複除去する。style属性は許可せず、生成時に検出数と値を警告する。警告は解消済みと扱わず、ブラウザでの影響を別途確認する。
+CSP Level 3 `style-src-attr` permits exactly the known hashed attribute values; `style-src 'self'` remains in force for stylesheets and style elements. No unsafe-inline or unsafe-eval is used. Known hashes are allowed globally, an intentional tradeoff to cover unknown-path 404s. Older browsers lacking style-src-attr support may block inline attributes. The generator throws on more than 100 rules or lines longer than 2,000 characters, without splitting or truncating the policy.
 
-[Cloudflareの仕様](https://developers.cloudflare.com/workers/static-assets/headers/)では一致した全ルールのヘッダーが適用され、同名値はカンマ結合される。このため共通 `/*` にCSPを置かない。`/`・`/index.html`、`/404`・`/404.html`、他のHTMLの拡張子あり/なし、ディレクトリindexのエイリアスにページ別CSPを生成する。`/_next/*` と、その他の実在する非HTMLファイルの完全一致パスに厳格なアセットCSPを生成する。重複するHTMLパス、100ルール超、1行2,000文字超は生成エラーにする。
-
-未知のURLやHTML正規化のリダイレクトは完全一致ルールの対象外になり得る。特に未知URLの404応答へのページ別CSPはこの静的ルールでは保証しない。既知HTML・アセットとともに本番の404/リダイレクトも確認し、必要なら別の設計をレビューする。
+History: REV-20261024-005 F-001/F-002 identified 14 blocked index.html style attributes and missing CSP on unknown-path 404s. Both are resolved by this change. Browser UI/motion behavior and production deployment remain unverified.
 
 ## ASVS 5.0 章単位の適用判断
 
@@ -77,76 +75,66 @@ npm run build && npm run preview
 
 ```sh
 curl -sI http://127.0.0.1:8787/
-curl -sI http://127.0.0.1:8787/404
+curl -sI http://127.0.0.1:8787/nope
 curl -sI http://127.0.0.1:8787/_next/static/<実在するアセットのパス>
 ```
 
 各最終応答でCSPが1個であり、カンマで複数ポリシーが結合されていないこと、共通ヘッダーが返ることを確認する。`/index.html`等のリダイレクトはLocationを確認し、遷移先のヘッダーを検査する。ブラウザでもscript/styleのCSP違反を確認する。ローカルHTTPは本番TLS/HSTSの有効性を検証しない。本番チェックは **未検証**。
 
-## 実装検証記録（2026-10-24 JST）
+## Verification history
 
-環境: Windows、Node.js v22.14.0、Wrangler 4.152.0。npmは`npm.cmd`を使用し、`npm_config_cache`をOSのTEMP配下に設定。コミット・push・デプロイは実行していない。正式承認はClaude Codeが行う。
+The previous 2026-10-24 run used per-path CSP: index.html had 14 blocked style attributes and `/missing-test` returned 404 without CSP. REV-20261024-005 F-001/F-002 are addressed by this change; those historical results do not describe the current policy.
 
-| コマンド | 終了コード | 実出力の抜粋 |
+## REV-20261024-005 verification
+
+Environment: Windows, Node.js v22.14.0, Wrangler 4.152.0. npm cache was directed to OS TEMP, outside the repository. No commit, push, merge or deployment was performed. Claude Code re-review remains pending.
+
+| Command | Exit code | Real output summary |
 |---|---|---|
 | `npm run format:check` | 0 | `All matched files use Prettier code style!` |
-| `npm run lint` | 0 | `eslint . --max-warnings=0`（診断なし） |
-| `npm run typecheck` | 0 | `tsc --noEmit`（診断なし） |
-| `npm test` | 0 | `Test Files 6 passed (6)` / `Tests 32 passed \u007c 1 skipped (33)`。CSPの7テストを含む |
-| `npm run build` | 0 | `Compiled successfully` / `postbuild` / `Generated out/_headers for 3 HTML pages`。ファイル存在確認・全文出力済み |
-| Node.js + JSDOM + node:cryptoによる全成果物照合 | 0 | `404.html: 3 inline scripts independently verified; styles=0` / `index.html: 3 inline scripts independently verified; styles=14` / `_not-found.html: 3 inline scripts independently verified; styles=0` |
-| `npm audit --omit=dev --audit-level=high` | 0 | `found 0 vulnerabilities` |
-| `git diff --check` | 0 | 出力なし |
+| `npm run lint` | 0 | `eslint . --max-warnings=0`, no diagnostics |
+| `npm run typecheck` | 0 | `tsc --noEmit`, no diagnostics |
+| `npm test` | 0 | `Test Files 6 passed (6)`; `Tests 37 passed` with `1 skipped (38)` |
+| `npm run build` (final standalone run) | 0 | `Compiled successfully in 2.2s`; `Generated out/_headers for 3 HTML pages` |
+| `git diff --check` | 0 | No whitespace errors |
 
-全成果物照合では生成器の抽出・ハッシュ関数を使わず、JSDOMの`script:not([src])`とnode:cryptoで独立計算し、対応するHTMLルール内のハッシュを照合した。アセットを含め17ルールが生成された。
+An accidental overlapping build failed with `Another next build process is already running`; the other invocation was interrupted. The final standalone build above succeeded.
 
-`npx --no-install wrangler dev --local --port 8787`はバックグラウンドセッションで起動。ユーザーディレクトリ内ログへの書き込みは`EPERM`だったが、サーバー起動・配信は成功し、次の実ログを確認した。検証後にCtrl+Cで停止（停止時のプロセス終了コード1）。
+Postbuild output:
 
 ```text
-[wrangler:info] ✨ Parsed 17 valid header rules.
+404.html: 0 inline style attributes, 0 unique values allowed by style-src-attr hashes
+_not-found.html: 0 inline style attributes, 0 unique values allowed by style-src-attr hashes
+index.html: 14 inline style attributes, 10 unique values allowed by style-src-attr hashes
+Generated out/_headers for 3 HTML pages
+```
+
+`out/_headers` contains one `/*` rule and one CSP; its longest line is 1,057 characters (hash lists abbreviated only in this display):
+
+```text
+/*
+  Strict-Transport-Security: max-age=31536000
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()
+  Cross-Origin-Opener-Policy: same-origin
+  X-Frame-Options: DENY
+  Content-Security-Policy: default-src 'none'; script-src 'self' <hash list truncated>; style-src 'self'; style-src-attr 'unsafe-hashes' <hash list truncated>; img-src 'self' data:; font-src 'self'; connect-src 'self'; manifest-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'; upgrade-insecure-requests
+```
+
+Started `npx --no-install wrangler dev --local --port 8787` in a background session. Wrangler reported a log-file `EPERM` outside the workspace, but served successfully:
+
+```text
+[wrangler:info] Parsed 1 valid header rule.
 [wrangler:info] Ready on http://127.0.0.1:8787
 ```
 
-`curl.exe -sI --max-time 10`の結果（各curl終了コード0、CSP数は大文字小文字を区別せずカウント）:
+`curl.exe -sI --max-time 10` results (CSP names counted case-insensitively):
 
-| URLパス | HTTPステータス | CSPヘッダー数 | 備考 |
+| Path | curl exit | HTTP status | CSP header count |
 |---|---|---|---|
-| `/` | 200 | 1 | 下記のHTMLポリシー |
-| `/_next/static/chunks/0009q67pk766q.css` | 200 | 1 | `default-src 'none'; frame-ancestors 'none'` |
-| `/404` | 200 | 1 | 404ページ用の3ハッシュ |
-| `/index.html` | 307 | 1 | `Location: /` |
-| `/missing-test` | 404 | 0 | 未知パスの制約を実測。共通ヘッダーは返る |
+| `/` | 0 | `200 OK` | 1 |
+| `/nope` | 0 | `404 Not Found` | 1 |
+| `/_next/static/chunks/0cz1d0mv5g_q7.js` | 0 | `200 OK` | 1 |
 
-`/`の実応答:
-
-```text
-HTTP/1.1 200 OK
-Content-Type: text/html; charset=utf-8
-Cache-Control: public, max-age=0, must-revalidate
-Strict-Transport-Security: max-age=31536000
-content-security-policy: default-src 'none'; script-src 'self' 'sha256-KEp5EkMBAosaxeEDxM/vCF9mNZRqoSv+nQDh1ViCE04=' 'sha256-OBTN3RiyCV4Bq7dFqZ5a2pAXjnCcCYeTJMO2I/LYKeo=' 'sha256-tyf6z5nD7PQpb/pLKgRJGg8d9bBkdNIOu5Z2pJqJBFQ='; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; manifest-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'; upgrade-insecure-requests
-cross-origin-opener-policy: same-origin
-permissions-policy: camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()
-referrer-policy: strict-origin-when-cross-origin
-x-content-type-options: nosniff
-x-frame-options: DENY
-```
-
-CSSアセットの実応答（両応答ともCSPのカンマ結合なし）:
-
-```text
-HTTP/1.1 200 OK
-Content-Type: text/css; charset=utf-8
-Cache-Control: public, max-age=0, must-revalidate
-Strict-Transport-Security: max-age=31536000
-content-security-policy: default-src 'none'; frame-ancestors 'none'
-cross-origin-opener-policy: same-origin
-permissions-policy: camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()
-referrer-policy: strict-origin-when-cross-origin
-x-content-type-options: nosniff
-x-frame-options: DENY
-```
-
-既存`index.html`のインラインstyle属性14件は指定の`style-src 'self'`でブロックされる。実出力の値は`transform:none`（2件）、`--i:0`〜`--i:5`（6件）、`transform:scaleY(0)`（1件）、`opacity:1`（1件）、`opacity:0`（4件）。見た目・モーションへの影響は未検証。CSPの緩和やUIの変更は行っていない。
-
-未検証: PlaywrightによるブラウザCSP違反確認、手動UI/a11y、secret scan、本番TLS/ヘッダー、運用者MFA/権限・ブランチ保護。依存監査はproduction依存のみ。Draft PRはcommit/push禁止のため作成していない。正式レビュー・承認待ち。
+All three returned the same global CSP without comma-combined policies. Wrangler was stopped with Ctrl+C (session exit 1 from interruption). Browser CSP-console/UI/motion checks, E2E/accessibility, production TLS/headers and operational controls remain unverified in this revision.

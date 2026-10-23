@@ -34,10 +34,10 @@
 - 理由: 未確定の情報を、架空のデータとして本番に出さない仕組みをコードで担保するため。Worker スクリプトを持たない構成は、攻撃対象と運用負荷が最小になる。
 - 再検討条件: 問い合わせフォーム、SSR、CMS が必要になった場合。CSP のハッシュ方式が保守しきれない場合。
 
-## ADR-005 CSP はビルド後のハッシュ方式、HSTS は includeSubDomains なしで開始
+## ADR-005 CSP uses build-time hashes; HSTS starts without includeSubDomains
 
-- 状態: Issue #9 のSecurity Team指定設計を実装。正式レビュー待ち。
-- 背景: 静的エクスポートでは応答ごとのnonceを発行できず、Next.jsが出力するインラインscriptを許可する必要がある。独自ドメインとサブドメインの運用条件は未確定。
-- 決定: ADR-004のヘッダー配置を更新し、`public/_headers`ではなく`npm run build`のpostbuildで全HTML本文からSHA-256を計算して`out/_headers`を生成する。script-srcにunsafe-inline/unsafe-evalを使わない。共通`/*`にCSPは置かず、HTMLのパス別CSPと非HTMLの厳格CSPを分離する。HSTSは`max-age=31536000`で開始し、includeSubDomains/preloadを付けない。
-- 理由: ビルドごとに変わるscript本文に正確に対応し、Cloudflareの同名ヘッダー結合による複数CSPを避ける。未確認のサブドメインへのHTTPS強制やpreload登録を推測で行わない。
-- 再検討条件: ドメインと全サブドメインのHTTPS運用が確認できた場合、SSR/API/外部リソースが必要になった場合、未知URLの404にもページ別CSPが必要な場合、Cloudflareの100ルール/1行2,000文字制限に達した場合。変更はSecurity Teamのレビューを受ける。本番のTLS・ヘッダーはデプロイ承認後に検証し、現在は未検証。
+- Status: Issue #9, REV-20261024-005 F-001/F-002 implemented; Claude Code re-review pending.
+- Context: Static export cannot issue per-response nonces. Next.js inline scripts and Motion SSR style attributes need exact hash allowances. Domain/subdomain operations remain unconfirmed.
+- Decision: Replace ADR-004's `public/_headers` placement with postbuild generation of `out/_headers` by `npm run build`. Emit exactly one Content-Security-Policy in the global `/*` block, covering HTML, unknown-path 404 responses and assets. Union all exported pages' SHA-256 script hashes and decoded style attribute hashes, deduplicate and sort. Keep `style-src 'self'`; use CSP Level 3 `style-src-attr 'unsafe-hashes'` with only the exported attribute value hashes. Never use unsafe-inline/unsafe-eval. Preserve the 100-rule and 2,000-character line limits and fail the build on overflow. HSTS remains `max-age=31536000`, without includeSubDomains/preload.
+- Reason: One global rule covers unknown URLs without Cloudflare combining duplicate CSP headers. Hashes allow only known exported inline content. The union permits each known value on every page, an intentional scope tradeoff. The earlier 14 blocked styles and missing unknown-path CSP are resolved by this change.
+- Reconsider when: All domains' HTTPS operation is confirmed, SSR/API/external resources become necessary, the hash union reaches Cloudflare limits, or browser support for CSP Level 3 is insufficient. Security Team review is required. Production TLS/headers remain unverified until deployment approval.

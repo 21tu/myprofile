@@ -3,7 +3,7 @@ import {
   buildHeaders,
   extractInlineScripts,
   hashScript,
-  htmlPaths,
+  extractStyleAttributes,
 } from '../../scripts/lib/csp.mjs';
 
 describe('SEC-002 / SEC-003 CSP generation', () => {
@@ -35,62 +35,84 @@ describe('SEC-002 / SEC-003 CSP generation', () => {
     expect(hashScript('a')).not.toBe(hashScript(' a'));
     expect(hashScript('&amp;')).not.toBe(hashScript('&'));
   });
-  it('covers root, extensionless, nested and directory index aliases', () => {
-    expect(htmlPaths('index.html')).toEqual(['/', '/index.html']);
-    expect(htmlPaths('404.html')).toEqual(['/404', '/404.html']);
-    expect(htmlPaths('a/b.html')).toEqual(['/a/b', '/a/b.html']);
-    expect(htmlPaths('x/index.html')).toEqual([
-      '/x',
-      '/x/',
-      '/x/index',
-      '/x/index.html',
-    ]);
-  });
-  it('deduplicates page hashes and keeps page and asset CSP disjoint', () => {
-    const headers = buildHeaders(
-      [
-        { file: 'index.html', html: '<script>a</script><script>a</script>' },
-        { file: '404.html', html: '<script>b</script>' },
-      ],
-      ['_next/a.js', 'favicon.ico'],
-    );
-    expect(headers.split('\n\n')[0]).not.toContain('Content-Security-Policy');
-    expect(headers).toContain(
-      `script-src 'self' ${hashScript('a')}; style-src 'self'`,
-    );
-    expect(headers).toContain(
-      `script-src 'self' ${hashScript('b')}; style-src 'self'`,
-    );
-    expect(headers).toContain(
-      "/_next/*\n  Content-Security-Policy: default-src 'none'; frame-ancestors 'none'",
-    );
-    expect(headers).toContain('/favicon.ico\n');
-    expect(headers).not.toMatch(/unsafe-inline|unsafe-eval/);
-    for (const block of headers.split('\n\n').slice(1))
-      expect(block.match(/Content-Security-Policy:/g)).toHaveLength(1);
-  });
-  it('fails rather than emitting rules Cloudflare would discard', () => {
-    expect(() =>
-      buildHeaders(
-        Array.from({ length: 50 }, (_, i) => ({ file: `${i}.html`, html: '' })),
+  it('extracts double, single, unquoted, empty and uppercase style attributes', () => {
+    expect(
+      extractStyleAttributes(
+        `<div style="--i:0"></div><p STYLE='opacity:1'></p><b style=transform:none></b><i style=""></i>`,
       ),
-    ).toThrow('100 rules');
-    expect(() =>
-      buildHeaders([
-        {
-          file: 'index.html',
-          html: Array.from(
-            { length: 40 },
-            (_, i) => `<script>${i}</script>`,
-          ).join(''),
-        },
-      ]),
-    ).toThrow('2000 characters');
-    expect(() =>
-      buildHeaders([
-        { file: 'x.html', html: '' },
-        { file: 'x/index.html', html: '' },
-      ]),
-    ).toThrow('Conflicting HTML path');
+    ).toEqual(['--i:0', 'opacity:1', 'transform:none', '']);
   });
+  it('decodes named and numeric entities exactly once', () => {
+    expect(
+      extractStyleAttributes(
+        `<div style="content:&quot;&#x27;&amp;&lt;&gt;&#65;&#x42;&amp;quot;"></div>`,
+      ),
+    ).toEqual([`content:"'&<>AB&quot;`]);
+  });
+  it('ignores data-style, comments, script text and other attribute values', () => {
+    expect(
+      extractStyleAttributes(
+        `<!-- <div style="bad"> --><script>const x = '<p style="bad">';</script><div data-style="bad" title="style='bad' >" style="color:red"></div>`,
+      ),
+    ).toEqual(['color:red']);
+  });
+  it('emits one global CSP with deterministic deduplicated unions', () => {
+    const pages = [
+      {
+        file: 'index.html',
+        html: '<script>a</script><script>a</script><div style="--i:0"></div>',
+      },
+      {
+        file: '404.html',
+        html: '<script>b</script><p style="opacity:1"></p><p style="--i:0"></p>',
+      },
+    ];
+    const headers = buildHeaders(pages);
+    expect(headers.match(/Content-Security-Policy:/g)).toHaveLength(1);
+    expect(
+      headers.split('\n').filter((line) => line && !line.startsWith(' ')),
+    ).toEqual(['/*']);
+    expect(headers).toContain(
+      `script-src 'self' ${[hashScript('a'), hashScript('b')].sort().join(' ')}; style-src 'self';`,
+    );
+    expect(headers).toContain(
+      `style-src-attr 'unsafe-hashes' ${[hashScript('--i:0'), hashScript('opacity:1')].sort().join(' ')};`,
+    );
+    expect(headers).toBe(buildHeaders([...pages].reverse()));
+    expect(headers).not.toMatch(/unsafe-inline|unsafe-eval/);
+  });
+  it('hashes decoded styles rather than their HTML spelling', () => {
+    const headers = buildHeaders([
+      { file: 'index.html', html: '<div style="content:&quot;x&quot;"></div>' },
+    ]);
+    expect(headers).toContain(hashScript('content:"x"'));
+    expect(headers).not.toContain(hashScript('content:&quot;x&quot;'));
+  });
+  it('uses one rule even for more than 100 pages', () => {
+    expect(
+      buildHeaders(
+        Array.from({ length: 101 }, (_, i) => ({
+          file: `${i}.html`,
+          html: '',
+        })),
+      ),
+    ).toMatch(/^\/\*\n/);
+  });
+  it.each(['script', 'style'])(
+    'fails if %s hashes exceed the line limit',
+    (kind) => {
+      expect(() =>
+        buildHeaders([
+          {
+            file: 'index.html',
+            html: Array.from({ length: 40 }, (_, i) =>
+              kind === 'script'
+                ? `<script>${i}</script>`
+                : `<div style="--i:${i}"></div>`,
+            ).join(''),
+          },
+        ]),
+      ).toThrow('2000 characters');
+    },
+  );
 });
