@@ -12,6 +12,9 @@ next-env.d.ts
 
 .npm-cache/
 public/contact.vcf
+.env*
+!.env.example
+.dev.vars
 
 # Playwright MCP working files
 .playwright-mcp/

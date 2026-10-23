@@ -33,3 +33,11 @@
   - **セキュリティヘッダー:** `public/_headers` に定義し、Static Assets で配信する。静的エクスポートでは nonce が使えないため、CSP のインラインスクリプトはビルド後にハッシュで許可する方式を #9 で検討する。`unsafe-eval` は使わない。
 - 理由: 未確定の情報を、架空のデータとして本番に出さない仕組みをコードで担保するため。Worker スクリプトを持たない構成は、攻撃対象と運用負荷が最小になる。
 - 再検討条件: 問い合わせフォーム、SSR、CMS が必要になった場合。CSP のハッシュ方式が保守しきれない場合。
+
+## ADR-005 CSP はビルド後のハッシュ方式、HSTS は includeSubDomains なしで開始
+
+- 状態: Issue #9 のSecurity Team指定設計を実装。正式レビュー待ち。
+- 背景: 静的エクスポートでは応答ごとのnonceを発行できず、Next.jsが出力するインラインscriptを許可する必要がある。独自ドメインとサブドメインの運用条件は未確定。
+- 決定: ADR-004のヘッダー配置を更新し、`public/_headers`ではなく`npm run build`のpostbuildで全HTML本文からSHA-256を計算して`out/_headers`を生成する。script-srcにunsafe-inline/unsafe-evalを使わない。共通`/*`にCSPは置かず、HTMLのパス別CSPと非HTMLの厳格CSPを分離する。HSTSは`max-age=31536000`で開始し、includeSubDomains/preloadを付けない。
+- 理由: ビルドごとに変わるscript本文に正確に対応し、Cloudflareの同名ヘッダー結合による複数CSPを避ける。未確認のサブドメインへのHTTPS強制やpreload登録を推測で行わない。
+- 再検討条件: ドメインと全サブドメインのHTTPS運用が確認できた場合、SSR/API/外部リソースが必要になった場合、未知URLの404にもページ別CSPが必要な場合、Cloudflareの100ルール/1行2,000文字制限に達した場合。変更はSecurity Teamのレビューを受ける。本番のTLS・ヘッダーはデプロイ承認後に検証し、現在は未検証。
