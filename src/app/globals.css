@@ -74,3 +74,52 @@ h2 {
     transform: scale(0.98);
   }
 }
+
+.hero-glow {
+  background: radial-gradient(
+    ellipse at 70% 40%,
+    rgb(88 184 255 / 0.12),
+    transparent 65%
+  );
+}
+.kinetic-word {
+  display: inline-block;
+  white-space: pre;
+}
+.process-progress {
+  grid-auto-rows: 1fr;
+}
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .kinetic-word {
+    animation: fade-up 0.5s both;
+    animation-delay: calc(var(--i) * 60ms);
+  }
+  .card-icon {
+    transition: transform 150ms;
+  }
+  .group:hover .card-icon,
+  .group:focus-within .card-icon {
+    transform: translateY(-3px) rotate(-3deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .parallax {
+    transform: none !important;
+  }
+  .process-line {
+    transform: none !important;
+  }
+  .process-number {
+    opacity: 1 !important;
+  }
+}

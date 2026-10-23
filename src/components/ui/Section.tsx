@@ -1,3 +1,4 @@
+import { Reveal } from '../motion/Reveal';
 import type { ReactNode } from 'react';
 import { Container } from './Container';
 export function Section({
@@ -18,9 +19,11 @@ export function Section({
       className="scroll-mt-28 py-14 even:bg-navy-900 sm:py-20"
     >
       <Container>
-        <h2 id={id + '-heading'} className="mb-4 font-bold">
-          {title}
-        </h2>
+        <Reveal>
+          <h2 id={id + '-heading'} className="mb-4 font-bold">
+            {title}
+          </h2>
+        </Reveal>
         {lead && <p className="mb-8 max-w-2xl text-ink-muted">{lead}</p>}
         {children}
       </Container>
