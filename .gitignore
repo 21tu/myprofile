@@ -12,3 +12,6 @@ next-env.d.ts
 
 .npm-cache/
 public/contact.vcf
+
+# Playwright MCP working files
+.playwright-mcp/
