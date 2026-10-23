@@ -5,11 +5,16 @@ on:
     branches: [main]
 permissions:
   contents: read
+concurrency:
+  group: quality-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   quality:
+    name: quality
+    timeout-minutes: 15
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Test annotation script
         run: node --test scripts/*.test.mjs
       - name: Check project scaffold
@@ -22,7 +27,7 @@ jobs:
             echo "::warning title=Next.js scaffold missing::Initialize package.json and package-lock.json in the platform task; application CI is not yet active"
             echo "ready=false" >> "$GITHUB_OUTPUT"
           fi
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         if: steps.scaffold.outputs.ready == 'true'
         with:
           node-version: '22'
@@ -39,7 +44,11 @@ jobs:
           for script in format:check lint typecheck test build; do
             if node -e "process.exit(require('./package.json').scripts?.['$script'] ? 0 : 1)"; then
               echo "::group::$script"
-              npm run "$script" >"$RUNNER_TEMP/${script//:/-}.log" 2>&1
+              if [ "$script" = test ]; then
+                npm run test:ci >"$RUNNER_TEMP/${script//:/-}.log" 2>&1
+              else
+                npm run "$script" >"$RUNNER_TEMP/${script//:/-}.log" 2>&1
+              fi
               status=$?
               cat "$RUNNER_TEMP/${script//:/-}.log"
               node scripts/annotate-log.mjs "$RUNNER_TEMP/${script//:/-}.log" "$script"
@@ -57,3 +66,85 @@ jobs:
       - name: Audit production dependencies
         if: steps.scaffold.outputs.ready == 'true'
         run: npm audit --omit=dev --audit-level=high
+  e2e:
+    name: e2e
+    needs: quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: playwright-results
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
+  lighthouse:
+    name: lighthouse
+    needs: quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - run: npm run lhci
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: lighthouse-results
+          path: .lighthouseci/
+          include-hidden-files: true
+          retention-days: 7
+  security:
+    name: security
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Audit production dependencies (blocking)
+        run: npm audit --omit=dev --audit-level=high
+      - name: Audit all dependencies (development advisories)
+        continue-on-error: true
+        shell: bash
+        run: |
+          npm audit --audit-level=high || {
+            echo '::warning title=Development dependency audit::Full audit failed; inspect advisories. Production high/critical findings are blocked by the separate production gate.'
+            exit 1
+          }
+      - name: Verify and run gitleaks v8.30.1
+        shell: bash
+        run: |
+          set -euo pipefail
+          scan_dir="$RUNNER_TEMP/gitleaks"
+          mkdir -p "$scan_dir"
+          cd "$scan_dir"
+          release=https://github.com/gitleaks/gitleaks/releases/download/v8.30.1
+          curl --fail --location --retry 3 "$release/gitleaks_8.30.1_linux_x64.tar.gz" -o gitleaks_8.30.1_linux_x64.tar.gz
+          curl --fail --location --retry 3 "$release/gitleaks_8.30.1_checksums.txt" -o gitleaks_8.30.1_checksums.txt
+          grep -E '  gitleaks_8\.30\.1_linux_x64\.tar\.gz$' gitleaks_8.30.1_checksums.txt > selected-checksum.txt
+          sha256sum --check --strict selected-checksum.txt
+          tar -xzf gitleaks_8.30.1_linux_x64.tar.gz gitleaks
+          cd "$GITHUB_WORKSPACE"
+          "$scan_dir/gitleaks" git --redact --no-banner -v .
