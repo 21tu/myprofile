@@ -10,7 +10,7 @@ Next.jsでポートフォリオを作りたいエンジニア、AIコーディ�
 
 ## 記事の切り分け
 - 第1回：デザインとUXの意思決定（本記事）
-- 第2回：Next.js × Cloudflareの構成と静的配信
+- 第2回：Next.js × Cloudflareの実装とレビューで見つかった問題（`article-02-implementation-review.md`）
 - 第3回：Claude CodeによるコードレビューとCodexの役割分担
 - 第4回：セキュリティ・アクセシビリティ・性能の検証結果
 
@@ -26,10 +26,12 @@ Next.jsでポートフォリオを作りたいエンジニア、AIコーディ�
 ## 同梱画像
 - `images/design-concept-dark-navy.png`：採用デザイン案。第1回の記事の図1。
 - `images/design-comparison-four-styles.png`：4案比較画像。第1回の記事の図2。
+- `images/impl-ui-mobile-375.png`：**実装済みの画面のスクリーンショット**（375px のファーストビュー、仮データ）。第2回の図1。
+- `images/impl-ui-desktop-1440-full.png`：**実装済みの画面のスクリーンショット**（1440px のページ全体、仮データ）。第2回の図2。
 
 ## 掲載素材のチェックリスト
 - [x] デザイン参考画像2点をローカル記事下書きに挿入（公開前の権利確認は別途必要）
-- [ ] モバイル版HeroとProjectsのスクリーンショット
+- [x] モバイル版Heroのスクリーンショット（`impl-ui-mobile-375.png`、ローカルのビルド、仮データ）
 - [ ] アーキテクチャ図（機密情報なし）
 - [ ] レビュー記録の匿名化サンプル
 - [ ] 実測したCore Web Vitals（測定条件付き）
