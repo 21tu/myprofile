@@ -4,6 +4,7 @@
 制作・公開ルール：`publishing-kit.md`
 図版：`images/`（2点同梱）
 開発ログテンプレート：`development-log-template.md`
+作成手順：`article-procedure.md`（企画から公開・記録まで）
 
 **必須：各記事に少なくとも1枚の画像を掲載する。**
 
