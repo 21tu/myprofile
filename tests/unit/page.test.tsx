@@ -56,9 +56,14 @@ describe('UI-DESIGN-001 / FR-002–006, FR-011', () => {
   });
   it('marks sample data and only shows the mascot placeholder', () => {
     const { container } = render(<Home />);
-    expect(screen.getAllByLabelText('サンプルデータ').length).toBeGreaterThan(
-      0,
-    );
+    const sampleLabels = screen.getAllByText(/仮データ/);
+    expect(sampleLabels.length).toBeGreaterThan(0);
+    for (const label of sampleLabels) {
+      expect(label).toHaveTextContent('仮データ');
+      expect(label).toHaveClass('sr-only');
+      expect(label.parentElement).toHaveTextContent('サンプル（仮データ）');
+      expect(label.parentElement).not.toHaveAttribute('aria-label');
+    }
     expect(
       screen.getByText('マスコット画像（正式画像の提供待ち）'),
     ).toBeVisible();

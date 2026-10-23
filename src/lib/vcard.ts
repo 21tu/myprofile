@@ -1,4 +1,4 @@
-﻿import type { Contact, Profile } from '../config/types';
+import type { Contact, Profile } from '../config/types';
 function escapeText(value: string): string {
   return value
     .replace(/\\/g, '\\\\')
