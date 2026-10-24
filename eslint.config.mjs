@@ -7,6 +7,8 @@ export default defineConfig([
   ...nextTypescript,
   globalIgnores([
     'out/**',
+    '.lighthouseci/**',
+    '.npm-cache/**',
     '.next/**',
     '_setup/**',
     'coverage/**',

@@ -3,6 +3,9 @@ import { content } from '@/config/content';
 import { findPlaceholders } from '@/lib/content-check';
 
 describe('findPlaceholders (ADR-004 / FR-005)', () => {
+  it('reports the temporary mascot (ADR-006 / UX-002)', () => {
+    expect(findPlaceholders(content)).toContain('mascot');
+  });
   // This pre-publish gate runs only via `npm run check:content` (npm sets npm_lifecycle_event).
   // It is intentionally skipped in `npm test` and must run and pass before any production deploy (ADR-004).
   it.skipIf(process.env.npm_lifecycle_event !== 'check:content')(
@@ -24,14 +27,18 @@ describe('findPlaceholders (ADR-004 / FR-005)', () => {
       services: [{ status: 'placeholder' }],
       skills: [{ status: 'placeholder' }],
       projects: [{ status: 'placeholder' }],
-      contactLinks: [{ status: 'placeholder' }],
+      contact: {
+        email: { status: 'placeholder', value: null },
+        github: { status: 'placeholder', value: null },
+      },
     };
     expect(findPlaceholders(placeholders)).toEqual([
       'profile',
       'services[0]',
       'skills[0]',
       'projects[0]',
-      'contactLinks[0]',
+      'contact.email',
+      'contact.github',
     ]);
   });
 
@@ -42,7 +49,13 @@ describe('findPlaceholders (ADR-004 / FR-005)', () => {
         services: [{ status: 'confirmed' }],
         skills: [{ status: 'confirmed' }],
         projects: [{ status: 'confirmed' }],
-        contactLinks: [{ status: 'confirmed' }],
+        contact: {
+          email: { status: 'confirmed', value: 'test@example.invalid' },
+          github: {
+            status: 'confirmed',
+            value: 'https://example.invalid/github-test',
+          },
+        },
       }),
     ).toEqual([]);
   });

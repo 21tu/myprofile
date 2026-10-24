@@ -3,7 +3,10 @@
 名刺のQRコードから開く、モバイル優先のエンジニアポートフォリオ（Next.js × Cloudflare Workers Static Assets）。
 Codexが実装し、**Claude Codeが正式にコードレビュー**する。仕様・判断・レビュー結果を後から追跡できるようにする。
 
-> 現在は**設計フェーズ**。アプリケーションコードはまだなく、本番デプロイもしていない。
+> 現在は**実装・レビュー段階**です。Next.js のサイトをローカルと CI で検証済みですが、**本番にはデプロイしていません**。公開する情報（氏名・経歴・実績・連絡先）は仮データで、`npm run check:content` が通るまで公開できません。
+>
+> - 開発: `npm ci && npm run dev` / 検証: `npm run format:check && npm run lint && npm run typecheck && npm test && npm run build` / E2E: `npm run test:e2e:install && npm run test:e2e`
+> - テストの方針: `docs/testing.md`、セキュリティ: `docs/security.md`、UI 設計: `docs/ui-design.md`
 
 ## 最初に読む順番
 

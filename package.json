@@ -6,23 +6,33 @@
     "node": ">=22"
   },
   "scripts": {
+    "test:e2e": "playwright test",
+    "test:e2e:install": "playwright install --with-deps chromium",
+    "lhci": "lhci autorun",
+    "test:ci": "vitest run --reporter=default --reporter=github-actions",
     "dev": "next dev",
     "build": "next build",
+    "postbuild": "node scripts/generate-headers.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "lint": "eslint . --max-warnings=0",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "check:content": "vitest run tests/unit/content-check.test.ts",
-    "preview": "wrangler dev --local"
+    "preview": "wrangler dev --local",
+    "prebuild": "node scripts/generate-vcard.mjs"
   },
   "dependencies": {
+    "lucide-react": "^1.61.0",
     "motion": "^14.6.0",
     "next": "^16.4.3",
     "react": "^19.3.1",
     "react-dom": "^19.3.1"
   },
   "devDependencies": {
+    "@axe-core/playwright": "4.14.0",
+    "@lhci/cli": "0.15.1",
+    "@playwright/test": "1.64.1",
     "@tailwindcss/postcss": "^4.3.3",
     "@testing-library/jest-dom": "^7.0.1",
     "@testing-library/react": "^16.3.3",
