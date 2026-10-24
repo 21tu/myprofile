@@ -6,7 +6,7 @@ import { Container } from '../ui/Container';
 import { ButtonLink } from '../ui/ButtonLink';
 import { Tag } from '../ui/Tag';
 import { SampleBadge } from '../ui/SampleBadge';
-import { MascotSlot } from '../ui/MascotSlot';
+import { InteractiveCharacter } from '../character/InteractiveCharacter';
 export function Hero() {
   const p = content.profile;
   return (
@@ -64,7 +64,7 @@ export function Hero() {
           )}
         </div>
         <Parallax className="min-w-0 md:col-span-5">
-          <MascotSlot />
+          <InteractiveCharacter />
         </Parallax>
       </Container>
       <Container className="mt-10">

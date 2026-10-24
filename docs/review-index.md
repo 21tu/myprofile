@@ -12,6 +12,7 @@
 | REV-20261024-006 | 2026-10-24 | PR #26 CI（E2E / axe / Lighthouse / Security） | c518304 → 466853c | APPROVE（Claude Code の判定。GitHub 上は COMMENT） | 0（MINOR 2件は許容 / 後回し） | `reviews/2026-10-24_pr-26_ci-e2e.md` |
 | REV-20261025-007 | 2026-10-25 | PR #34 UI エフェクト改善（モーション v2） | f6453c5 → 最新 | APPROVE（Claude Code の判定。GitHub 上は COMMENT） | 0（MINOR 1件は次の作業へ） | `reviews/2026-10-25_pr-34_ui-effects-v2.md` |
 | REV-20261025-008 | 2026-10-25 | PR #36 Editorial とライト / ダーク | 736da57 → 最新 | APPROVE（Claude Code の判定。GitHub 上は COMMENT） | 0 | `reviews/2026-10-25_pr-36_editorial-theme.md` |
+| REV-20261025-009 | 2026-10-25 | PR #38 きつねの SVG キャラクター | 31e4626 | APPROVE（Claude Code の判定。GitHub 上は COMMENT） | 0（MINOR 1件は後回し） | `reviews/2026-10-25_pr-38_fox-character.md` |
 
 ## 判定ルール
 - `APPROVE`: BLOCKER/MAJORが解消し、必須検査の結果を確認済み。

@@ -314,3 +314,160 @@
     --shadow-ink: var(--ink);
   }
 }
+:root {
+  --fox-fur: #f2b544;
+  --fox-cream: #fff4de;
+  --fox-beret: #6b4a2e;
+  --fox-face: #1f2430;
+  --fox-ink: #d9dee5;
+  --fox-bag: #2f5d73;
+  --fox-outline: none;
+}
+@media (prefers-color-scheme: light) {
+  :root {
+    --fox-ink: #1f2430;
+    --fox-outline: #8a5a12;
+  }
+}
+.fox-silhouette {
+  stroke: var(--fox-outline);
+  stroke-width: 2px;
+  stroke-linejoin: round;
+}
+.fox-character g {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.fox-character .body,
+.fox-character .head,
+.fox-character .head-sway,
+.fox-character .paw,
+.fox-character .ear-left,
+.fox-character .ear-right {
+  transform-origin: center bottom;
+}
+.fox-character .mouth-smile,
+.fox-character .mouth-surprised {
+  opacity: 0;
+}
+.fox-character:is(
+    :focus-visible,
+    [data-mood='contact'],
+    [data-reaction='jump'],
+    [data-reaction='wave']
+  )
+  .mouth-neutral {
+  opacity: 0;
+}
+.fox-character:is(
+    :focus-visible,
+    [data-mood='contact'],
+    [data-reaction='jump'],
+    [data-reaction='wave']
+  )
+  .mouth-smile {
+  opacity: 1;
+}
+.fox-character:is(:focus-visible) .eyes-look {
+  scale: 1.12;
+}
+@media (hover: hover) {
+  .fox-character:hover .eyes-look {
+    scale: 1.12;
+  }
+  .fox-character:hover .mouth-neutral {
+    opacity: 0;
+  }
+  .fox-character:hover .mouth-smile {
+    opacity: 1;
+  }
+}
+.fox-character[data-reaction='surprised'] .mouth-neutral,
+.fox-character[data-reaction='surprised'] .mouth-smile {
+  opacity: 0;
+}
+.fox-character[data-reaction='surprised'] .mouth-surprised {
+  opacity: 1;
+}
+.fox-character[data-blinking='true'] :is(.eye-left, .eye-right) {
+  animation: fox-blink 120ms ease-in-out;
+}
+@keyframes fox-blink {
+  50% {
+    transform: scaleY(0.1);
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .fox-character[data-ready='true'] .body {
+    animation: fox-breathe 4s ease-in-out infinite;
+  }
+  .fox-character[data-ready='true'] .head-sway {
+    animation: fox-sway 6s ease-in-out infinite;
+  }
+  .fox-character .head-track {
+    transform: rotate(var(--fox-head-tilt, 0deg));
+  }
+  .fox-character .eyes-track {
+    transform: translate(var(--fox-eye-x, 0px), var(--fox-eye-y, 0px));
+  }
+  .fox-character[data-mood='projects'] .eyes-look {
+    translate: 0 6px;
+  }
+  .fox-character .eyes-look {
+    transition:
+      translate 400ms ease,
+      scale 300ms ease;
+  }
+  .fox-character[data-mood='about'] :is(.ear-left, .ear-right) {
+    animation: fox-wave 500ms ease-in-out;
+  }
+  .fox-character[data-reaction='wave'] .paw {
+    animation: fox-wave 700ms ease-in-out;
+  }
+  .fox-character[data-reaction='jump'] .fox-reaction {
+    animation: fox-hop 600ms ease-in-out;
+  }
+  .fox-character[data-reaction='spin'] .fox-reaction {
+    animation: fox-spin 700ms ease-in-out;
+  }
+  .fox-character[data-reaction='idle']:focus-visible .fox-reaction {
+    animation: fox-hop 300ms ease-in-out;
+  }
+  @media (hover: hover) {
+    .fox-character[data-reaction='idle']:hover .fox-reaction {
+      animation: fox-hop 300ms ease-in-out;
+    }
+  }
+}
+@keyframes fox-breathe {
+  50% {
+    transform: scaleY(1.02);
+  }
+}
+@keyframes fox-sway {
+  25% {
+    transform: rotate(-1.5deg);
+  }
+  75% {
+    transform: rotate(1.5deg);
+  }
+}
+@keyframes fox-hop {
+  50% {
+    transform: translateY(-6px);
+  }
+}
+@keyframes fox-spin {
+  50% {
+    transform: rotate(12deg);
+  }
+}
+@keyframes fox-wave {
+  25%,
+  75% {
+    transform: rotate(-12deg);
+  }
+  50% {
+    transform: rotate(12deg);
+  }
+}
