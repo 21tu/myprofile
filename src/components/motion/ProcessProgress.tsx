@@ -52,7 +52,7 @@ function ProcessNumber({
   );
   return (
     <motion.span
-      className="process-number relative -left-5 flex size-10 items-center justify-center rounded-full border border-accent bg-navy-800 text-accent"
+      className="process-number relative -left-7 flex size-14 items-center justify-center text-2xl font-bold rounded-full border border-accent bg-card text-accent"
       style={{ opacity }}
     >
       {index + 1}

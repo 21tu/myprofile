@@ -8,7 +8,12 @@ export const metadata: Metadata = {
   description: content.profile.intro,
 };
 
-export const viewport: Viewport = { themeColor: '#0B1626' };
+export const viewport: Viewport = {
+  themeColor: [
+    { media: '(prefers-color-scheme: dark)', color: '#0B1626' },
+    { media: '(prefers-color-scheme: light)', color: '#F6F4EF' },
+  ],
+};
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (

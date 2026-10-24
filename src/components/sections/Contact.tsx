@@ -22,7 +22,7 @@ export function Contact({
       ? contact.github.value
       : null;
   return (
-    <Section id="contact" title="Contact">
+    <Section index="06" id="contact" title="Contact">
       <Reveal>
         {(!email || !github) && (
           <div className="mb-5">

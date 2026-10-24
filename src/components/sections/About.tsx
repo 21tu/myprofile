@@ -1,28 +1,27 @@
 import { Reveal } from '../motion/Reveal';
 import { content } from '@/config/content';
 import { Section } from '../ui/Section';
-import { Card } from '../ui/Card';
 import { SampleBadge } from '../ui/SampleBadge';
 export function About() {
   const a = content.about;
   return (
-    <Section id="about" title="About">
+    <Section index="02" id="about" title="About">
       <Reveal>
-        <Card>
+        <div>
           {a.status === 'placeholder' && <SampleBadge />}
-          <dl className="mt-4 grid gap-5">
+          <dl className="mt-4">
             {[
               { title: '経歴', value: a.career },
               { title: '人物紹介', value: a.personality },
               { title: '趣味', value: a.hobbies },
             ].map((item) => (
-              <div key={item.title}>
-                <dt className="font-bold">{item.title}</dt>
+              <div key={item.title} className="border-t border-line py-6">
+                <dt className="mb-3 text-sm font-bold">{item.title}</dt>
                 <dd className="text-ink-muted">{item.value}</dd>
               </div>
             ))}
           </dl>
-        </Card>
+        </div>
       </Reveal>
     </Section>
   );

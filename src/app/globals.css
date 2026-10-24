@@ -1,5 +1,20 @@
 @import 'tailwindcss';
 :root {
+  color-scheme: light dark;
+  --bg: #0b1626;
+  --surface: #111f33;
+  --card: #192a40;
+  --ink: #f5f7fa;
+  --ink-muted: #a8b5c5;
+  --accent: #58b8ff;
+  --on-accent: #0b1626;
+  --line: color-mix(in srgb, var(--accent) 15%, var(--bg));
+  --glow: 12%;
+  --gradient-opacity: 0.18;
+  --highlight: 15%;
+  --glass: 70%;
+  --shadow: 20%;
+  --shadow-ink: var(--bg);
   --ease-out-expo: cubic-bezier(0.22, 1, 0.36, 1);
   --dur-button: 200ms;
   --dur-card: 300ms;
@@ -13,23 +28,25 @@
   --magnetic-mass: 0.6;
 }
 @theme {
-  --color-navy-950: #0b1626;
-  --color-navy-900: #111f33;
-  --color-navy-800: #192a40;
-  --color-accent: #58b8ff;
-  --color-ink: #f5f7fa;
-  --color-ink-muted: #a8b5c5;
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-card: var(--card);
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-line: var(--line);
+  --color-accent: var(--accent);
+  --color-on-accent: var(--on-accent);
   --font-sans:
     system-ui, -apple-system, 'Hiragino Sans', 'Noto Sans JP', 'Yu Gothic UI',
     sans-serif;
 }
 body {
   margin: 0;
-  background: var(--color-navy-950);
+  background: var(--color-bg);
   color: var(--color-ink);
   font-family: var(--font-sans);
   font-size: 1rem;
-  line-height: 1.7;
+  line-height: 1.8;
   overflow-wrap: anywhere;
 }
 :focus-visible {
@@ -37,12 +54,15 @@ body {
   outline-offset: 3px;
 }
 h1 {
-  font-size: clamp(2rem, 5vw, 4rem);
-  line-height: 1.2;
+  font-size: clamp(2.75rem, 8vw, 6.5rem);
+  line-height: 1.02;
+  letter-spacing: -0.03em;
+  font-weight: 800;
 }
 h2 {
-  font-size: clamp(1.75rem, 4vw, 2.75rem);
-  line-height: 1.3;
+  font-size: clamp(2.25rem, 6vw, 4.5rem);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
 }
 .skip-link {
   position: fixed;
@@ -51,7 +71,7 @@ h2 {
   left: 1rem;
   padding: 0.75rem;
   background: var(--color-ink);
-  color: var(--color-navy-950);
+  color: var(--color-bg);
   transform: translateY(-200%);
 }
 .skip-link:focus {
@@ -95,7 +115,7 @@ h2 {
 .hero-glow {
   background: radial-gradient(
     ellipse at 70% 40%,
-    rgb(88 184 255 / 0.12),
+    color-mix(in srgb, var(--accent) var(--glow), transparent),
     transparent 65%
   );
 }
@@ -159,7 +179,11 @@ h2 {
   position: absolute;
   inset: auto 0 0;
   height: 1px;
-  background: linear-gradient(90deg, rgb(88 184 255 / 0.15), transparent);
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--accent) var(--highlight), transparent),
+    transparent
+  );
   pointer-events: none;
 }
 @supports (animation-timeline: scroll()) {
@@ -173,8 +197,9 @@ h2 {
 }
 @keyframes header-glass {
   to {
-    background-color: rgb(11 22 38 / 0.95);
-    box-shadow: 0 8px 24px rgb(0 0 0 / 0.2);
+    background-color: color-mix(in srgb, var(--bg) 95%, transparent);
+    box-shadow: 0 8px 24px
+      color-mix(in srgb, var(--shadow-ink) var(--shadow), transparent);
   }
 }
 @property --gx {
@@ -188,7 +213,7 @@ h2 {
   initial-value: 40%;
 }
 .hero-gradient {
-  opacity: 0.18;
+  opacity: var(--gradient-opacity);
   background: radial-gradient(
     ellipse at var(--gx, 70%) var(--gy, 40%),
     var(--color-accent),
@@ -224,7 +249,11 @@ h2 {
   border-radius: inherit;
   pointer-events: none;
   opacity: 0;
-  background: linear-gradient(180deg, rgb(88 184 255 / 0.12), transparent 60%);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--accent) var(--glow), transparent),
+    transparent 60%
+  );
 }
 .card-reveal:hover::before,
 .card-reveal:focus-within::before {
@@ -254,5 +283,30 @@ h2 {
   .heading-word {
     opacity: 1 !important;
     filter: none !important;
+  }
+}
+
+p {
+  max-width: 40em;
+}
+.glass {
+  background-color: color-mix(in srgb, var(--bg) var(--glass), transparent);
+}
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg: #f6f4ef;
+    --surface: #eeebe4;
+    --card: #ffffff;
+    --ink: #0b1626;
+    --ink-muted: #4b5565;
+    --line: #d9d6cf;
+    --accent: #1d63a6;
+    --on-accent: #ffffff;
+    --glow: 6%;
+    --gradient-opacity: 0.08;
+    --highlight: 8%;
+    --glass: 60%;
+    --shadow: 5%;
+    --shadow-ink: var(--ink);
   }
 }

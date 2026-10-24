@@ -21,7 +21,7 @@ export function ButtonLink({
       download={download}
       target={external ? '_blank' : undefined}
       rel={external ? 'noopener noreferrer' : undefined}
-      className={`interactive inline-flex min-h-11 min-w-11 items-center justify-center gap-2 rounded-full border px-5 py-2 text-center font-semibold ${variant === 'primary' ? 'border-accent bg-accent text-navy-950' : 'border-accent/40 text-accent'}`}
+      className={`interactive inline-flex min-h-11 min-w-11 items-center justify-center gap-2 rounded-full border px-5 py-2 text-center font-semibold ${variant === 'primary' ? 'border-accent bg-accent text-on-accent' : 'border-accent/40 text-accent'}`}
     >
       {children}
       {external && (

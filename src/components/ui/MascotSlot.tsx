@@ -10,7 +10,7 @@ export function MascotSlot({
 }) {
   if (mascot.src) {
     return (
-      <figure className="overflow-hidden rounded-2xl border border-accent/15 bg-navy-800">
+      <figure className="overflow-hidden rounded-2xl border border-line bg-card">
         <Image
           unoptimized
           src={mascot.src}

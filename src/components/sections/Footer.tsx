@@ -5,7 +5,7 @@ import { Container } from '../ui/Container';
 import { ButtonLink } from '../ui/ButtonLink';
 export function Footer() {
   return (
-    <footer className="border-t border-accent/15 bg-navy-900 py-10">
+    <footer className="border-t border-line bg-surface py-10">
       <Container>
         <h2 className="sr-only">フッター</h2>
         <nav

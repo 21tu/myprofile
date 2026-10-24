@@ -279,3 +279,34 @@ test('FR-010: unknown URL returns the accessible 404 page', async ({
     page.getByRole('heading', { name: 'ページが見つかりません' }),
   ).toBeVisible();
 });
+
+test.describe('ADR-008 light theme', () => {
+  test.use({ colorScheme: 'light' });
+  for (const width of [375, 1440]) {
+    test.describe(`${width}px`, () => {
+      test.use({ viewport: { width, height: 900 } });
+      test('NFR-001 NFR-003: axe and horizontal overflow', async ({
+        page,
+      }, testInfo) => {
+        await page.goto('/');
+        expect(
+          await page.evaluate(
+            () => document.documentElement.scrollWidth <= innerWidth,
+          ),
+        ).toBe(true);
+        const results = await new AxeBuilder({ page })
+          .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'])
+          .analyze();
+        await testInfo.attach('axe-light-results', {
+          body: JSON.stringify(results, null, 2),
+          contentType: 'application/json',
+        });
+        expect(
+          results.violations.filter(
+            (v) => v.impact === 'serious' || v.impact === 'critical',
+          ),
+        ).toEqual([]);
+      });
+    });
+  }
+});
