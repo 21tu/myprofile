@@ -1,8 +1,9 @@
 # note執筆資料
 
-記事原稿：`article-draft.md`
+記事原稿：`article-draft.md`（第1回）、`article-02-implementation-review.md`（第2回）
 制作・公開ルール：`publishing-kit.md`
-図版：`images/`（2点同梱）
+図版：`images/`（`impl-` で始まるものは実装済みの画面のスクリーンショット。それ以外はAI生成のデザインコンセプト）
+開発ログ：`logs/`
 開発ログテンプレート：`development-log-template.md`
 
 **必須：各記事に少なくとも1枚の画像を掲載する。**
