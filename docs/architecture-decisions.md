@@ -42,7 +42,7 @@
 - Reason: One global rule covers unknown URLs without Cloudflare combining duplicate CSP headers. Hashes allow only known exported inline content. The union permits each known value on every page, an intentional scope tradeoff. The earlier 14 blocked styles and missing unknown-path CSP are resolved by this change.
 - Reconsider when: All domains' HTTPS operation is confirmed, SSR/API/external resources become necessary, the hash union reaches Cloudflare limits, or browser support for CSP Level 3 is insufficient. Security Team review is required. Production TLS/headers remain unverified until deployment approval.
 
-## ADR-006 マスコットに、デザインコンセプトの画像を仮で使う（例外）
+## ADR-006 マスコットに、デザインコンセプトの画像を仮で使う（例外）— **廃止（ADR-009 で置き換え）**
 - 状態: 採用（暫定。#29 で正式画像に差し替えるまで）
 - 背景: UX-002 では「マスコットは提供された素材をそのまま使い、代わりの画像を作らない」と定めている。正式画像はまだ提供されていない。2026-10-24、オーナーが「デザインコンセプトのきつねを仮で使う」と明示的に指示した。
 - 決定:
@@ -64,3 +64,14 @@
   - `color-scheme: light dark` を宣言し、`themeColor` はテーマごとに 2 つ設定する。
 - 理由: JS もボタンも不要で、ちらつきなく切り替えられ、CSP にも影響しない。ネイビーの印象（UX-001）を、ダークでもライトの文字色でも保てる。
 - 再検討条件: 手動の切り替えボタンが必要になったとき（`data-theme` と、ちらつきを防ぐ処理が必要になる）。
+
+## ADR-009 きつねのマスコットを SVG で再現し、インタラクティブにする（UX-002 の改訂、ADR-006 を置き換え）
+- 状態: 採用（#37）
+- 背景: UX-002 では「提供素材のまま使い、新しく生成しない」と定めていた。2026-10-25、オーナーが「きつねを SVG で再現する」ことを選んだ（別のキャラクターではなく、きつねの意匠を保つ）。
+- 決定:
+  - きつねの特徴（黄色から橙色、丸い体、茶色のベレー帽、黒いヘッドホン、腰のチョークバッグ、ふわふわの尻尾）を保ったまま、幾何学的な SVG で描き直す（`src/components/character/`）。
+  - 視線・瞬き・呼吸・ホバー・クリック・スクロール・テーマに反応させる（`docs/ui-design.md` §10）。
+  - ADR-006 の仮画像（デザインコンセプトの切り抜き）は使わなくなるので廃止する。`public/mascot/fox-temp-concept.webp` は削除する（元の画像は `note/images/` に残る）。
+  - `content.mascot.status` は、オーナーが SVG のデザインを確定するまで `placeholder` のままにし、公開前チェックで本番公開を止める。
+- 理由: 解像度に依存せず軽い（画像の LCP と低解像度の警告を解消できる）。操作に反応させることで、サイトの象徴にできる。
+- 再検討条件: オーナーから正式なキャラクターのデータ（SVG / 画像）が提供されたとき。そのときは、その素材を優先して SVG を描き直す（#29）。

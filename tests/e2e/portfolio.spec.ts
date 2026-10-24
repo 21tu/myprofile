@@ -331,3 +331,37 @@ test.describe('ADR-008 light theme', () => {
     });
   }
 });
+
+for (const colorScheme of ['dark', 'light'] as const) {
+  for (const width of [375, 1440]) {
+    test.describe(`ADR-009 character ${colorScheme} ${width}`, () => {
+      test.use({ colorScheme, viewport: { width, height: 900 } });
+      test('UX-002 NFR-002: visible and keyboard operable', async ({
+        page,
+      }) => {
+        const errors: string[] = [];
+        page.on('pageerror', (error) => errors.push(error.message));
+        await page.goto('/');
+        const character = page.getByRole('button', {
+          name: 'きつねのマスコット。押すとリアクションします',
+        });
+        await expect(character).toBeVisible();
+        for (
+          let i = 0;
+          i < 30 &&
+          !(await character.evaluate((el) => el === document.activeElement));
+          i++
+        )
+          await page.keyboard.press('Tab');
+        await expect(character).toBeFocused();
+        await expect(character).not.toHaveCSS('outline-style', 'none');
+        await page.keyboard.press('Enter');
+        await expect(character).toHaveAttribute('data-reaction', 'jump');
+        await expect(character).toHaveAttribute('data-reaction', 'idle');
+        await page.keyboard.press('Space');
+        await expect(character).toHaveAttribute('data-reaction', 'spin');
+        expect(errors).toEqual([]);
+      });
+    });
+  }
+}
