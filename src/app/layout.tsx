@@ -1,11 +1,14 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import type { ReactNode } from 'react';
 import './globals.css';
+import { content } from '@/config/content';
 
 export const metadata: Metadata = {
-  title: 'TBD | Portfolio — under construction',
-  description: 'TBD: Portfolio content is under construction.',
+  title: content.site.name,
+  description: content.profile.intro,
 };
+
+export const viewport: Viewport = { themeColor: '#0B1626' };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (

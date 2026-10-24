@@ -14,9 +14,11 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "check:content": "vitest run tests/unit/content-check.test.ts",
-    "preview": "wrangler dev --local"
+    "preview": "wrangler dev --local",
+    "prebuild": "node scripts/generate-vcard.mjs"
   },
   "dependencies": {
+    "lucide-react": "^1.61.0",
     "motion": "^14.6.0",
     "next": "^16.4.3",
     "react": "^19.3.1",

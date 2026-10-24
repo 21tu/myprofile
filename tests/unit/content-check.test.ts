@@ -24,14 +24,18 @@ describe('findPlaceholders (ADR-004 / FR-005)', () => {
       services: [{ status: 'placeholder' }],
       skills: [{ status: 'placeholder' }],
       projects: [{ status: 'placeholder' }],
-      contactLinks: [{ status: 'placeholder' }],
+      contact: {
+        email: { status: 'placeholder', value: null },
+        github: { status: 'placeholder', value: null },
+      },
     };
     expect(findPlaceholders(placeholders)).toEqual([
       'profile',
       'services[0]',
       'skills[0]',
       'projects[0]',
-      'contactLinks[0]',
+      'contact.email',
+      'contact.github',
     ]);
   });
 
@@ -42,7 +46,13 @@ describe('findPlaceholders (ADR-004 / FR-005)', () => {
         services: [{ status: 'confirmed' }],
         skills: [{ status: 'confirmed' }],
         projects: [{ status: 'confirmed' }],
-        contactLinks: [{ status: 'confirmed' }],
+        contact: {
+          email: { status: 'confirmed', value: 'test@example.invalid' },
+          github: {
+            status: 'confirmed',
+            value: 'https://example.invalid/github-test',
+          },
+        },
       }),
     ).toEqual([]);
   });
