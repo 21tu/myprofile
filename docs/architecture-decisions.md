@@ -52,3 +52,15 @@
 - 理由: オーナーの判断によって、レイアウトとモーションを実際のキャラクターで確認できるようにするため。本番に流出しないことは、既存の公開前チェックで担保する。
 - リスク: AI生成画像の利用条件と権利は未確認（オーナーが確認する）。解像度が低いため、高密度ディスプレイではぼやける。
 - 再検討条件: 正式画像が提供されたら、この ADR を「廃止」にして差し替える（#29）。
+
+## ADR-007 デプロイはステージング先行、GitHub Actions + Environments の承認
+- 状態: 採用（#31）
+- 背景: 公開情報が仮データのままで、本番公開の条件（`check:content` が通ること）を満たしていない。それでも、スマートフォンでの実機確認やレビューのために、公開された URL がほしい。
+- 決定:
+  - Cloudflare Workers Static Assets に、`myprofile-staging`（workers.dev、`X-Robots-Tag: noindex, nofollow`）と `myprofile`（本番、workers.dev は無効、ルートは未設定）の 2 つの環境を用意する。
+  - デプロイは `.github/workflows/deploy.yml` の手動実行だけにする。GitHub Environments（`staging` / `production`）の Required reviewers による承認を必要にする。
+  - 本番は、ビルドの前に `check:content` を実行する。
+  - Cloudflare の資格情報は、Environment secrets で管理する（最小権限の API トークン）。
+- 理由: 自動デプロイをやめて人間の承認を必須にすると、「デプロイは承認制」（SEC-006、requirements §10）を仕組みで担保できる。ステージングは noindex にして、検索経由で流出する可能性を下げる。
+- 制約とリスク: noindex はアクセス制限ではないので、URL を知っている人はステージングを見られる（仮データだけで、秘密情報は含まない）。承認者がオーナー一人なので、self-review は許可する。
+- 再検討条件: 独自ドメインを決めたとき、ステージングにアクセス制限（Cloudflare Access）が必要になったとき、承認者が増えたとき。

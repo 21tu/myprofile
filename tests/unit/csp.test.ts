@@ -7,6 +7,24 @@ import {
 } from '../../scripts/lib/csp.mjs';
 
 describe('SEC-002 / SEC-003 CSP generation', () => {
+  it('omits robots restrictions for default and production headers', () => {
+    const pages = [{ file: 'index.html', html: '<script>a</script>' }];
+    expect(buildHeaders(pages)).not.toContain('X-Robots-Tag');
+    expect(buildHeaders(pages, { robotsNoindex: false })).toBe(
+      buildHeaders(pages),
+    );
+  });
+  it('adds only the staging robots header to the global block', () => {
+    const pages = [{ file: 'index.html', html: '<script>a</script>' }];
+    const headers = buildHeaders(pages, { robotsNoindex: true });
+    expect(headers.match(/X-Robots-Tag: noindex, nofollow/g)).toHaveLength(1);
+    expect(headers.replace('  X-Robots-Tag: noindex, nofollow\n', '')).toBe(
+      buildHeaders(pages),
+    );
+    expect(
+      headers.split('\n').filter((line) => line && !line.startsWith(' ')),
+    ).toEqual(['/*']);
+  });
   it('preserves exact text, multiple scripts, attributes and empty scripts', () => {
     expect(
       extractInlineScripts(

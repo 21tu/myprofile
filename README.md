@@ -46,4 +46,6 @@ GitHub Actionsは `::error file=...,line=...,col=...::...` 形式で診断を出
 
 ## 運用注意
 
+デプロイ（ステージングだけ公開、GitHub Actions で手動承認）の手順は `docs/deployment.md` を参照。本番公開は、内容が確定して `npm run check:content` が通り、オーナーが承認するまで行わない。
+
 コミットSHA・日時・テスト結果を記録し、過去の判断を上書きして消さない。設計変更はADRに追加する。note原稿は実装の証拠ではない。

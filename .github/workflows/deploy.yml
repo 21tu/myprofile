@@ -1,0 +1,96 @@
+name: Deploy static assets
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: Deployment environment
+        type: choice
+        options: [staging, production]
+        default: staging
+        required: true
+permissions:
+  contents: read
+concurrency: deploy-${{ inputs.target }}
+jobs:
+  deploy:
+    environment:
+      name: ${{ inputs.target }}
+      url: ${{ steps.deploy.outputs.url }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Verify deployment secrets
+        shell: bash
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          missing=0
+          for key in CLOUDFLARE_API_TOKEN CLOUDFLARE_ACCOUNT_ID; do
+            if [ -z "${!key}" ]; then
+              echo "::error::$key is required in the selected GitHub Environment"
+              missing=1
+            fi
+          done
+          exit "$missing"
+      - run: npm ci
+      - name: Gate production content before building
+        if: inputs.target == 'production'
+        run: npm run check:content
+      - name: Build staging
+        if: inputs.target == 'staging'
+        run: npm run build:staging
+      - name: Build production
+        if: inputs.target == 'production'
+        run: npm run build
+      - name: Verify generated headers
+        shell: bash
+        env:
+          TARGET: ${{ inputs.target }}
+        run: |
+          test -f out/_headers || { echo '::error::out/_headers is missing'; exit 1; }
+          if [ "$TARGET" = staging ]; then
+            grep -Fxq '  X-Robots-Tag: noindex, nofollow' out/_headers || {
+              echo '::error::Staging robots header is missing'; exit 1;
+            }
+          elif grep -qi 'X-Robots-Tag:' out/_headers; then
+            echo '::error::Production must not contain X-Robots-Tag'; exit 1
+          fi
+      - name: Deploy
+        id: deploy
+        shell: bash
+        env:
+          TARGET: ${{ inputs.target }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          NO_COLOR: '1'
+        run: |
+          args=()
+          if [ "$TARGET" = staging ]; then args+=(--env staging); fi
+          # Secrets are masked by GitHub Actions, so the log is safe to show on failure.
+          npx wrangler deploy "${args[@]}" > "$RUNNER_TEMP/wrangler-deploy.log" 2>&1 || {
+            cat "$RUNNER_TEMP/wrangler-deploy.log"
+            echo '::error::Wrangler deployment failed'
+            exit 1
+          }
+          url=$(grep -Eo 'https://myprofile-staging\.[a-zA-Z0-9-]+\.workers\.dev' "$RUNNER_TEMP/wrangler-deploy.log" | head -n 1 || true)
+          if [ "$TARGET" = staging ] && [ -n "$url" ]; then
+            echo "url=$url" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Inspect staging response headers
+        if: inputs.target == 'staging'
+        shell: bash
+        env:
+          DEPLOYED_URL: ${{ steps.deploy.outputs.url }}
+        run: |
+          if [ -z "$DEPLOYED_URL" ]; then
+            echo '::notice::No staging URL found in Wrangler output; header inspection skipped'
+            exit 0
+          fi
+          curl -sSI --max-time 30 "$DEPLOYED_URL" > "$RUNNER_TEMP/staging-headers.txt"
+          awk 'BEGIN { count=0 } /^HTTP\// { sub(/\r$/, ""); print } tolower($0) ~ /^x-robots-tag:/ { sub(/\r$/, ""); print } tolower($0) ~ /^content-security-policy:/ { count++ } END { print "Content-Security-Policy header count: " count }' "$RUNNER_TEMP/staging-headers.txt"

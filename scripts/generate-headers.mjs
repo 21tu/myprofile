@@ -25,5 +25,9 @@ for (const file of files.filter((file) => file.endsWith('.html'))) {
   );
 }
 if (!pages.length) throw new Error('No exported HTML found in out/');
-await writeFile(new URL('_headers', root), buildHeaders(pages), 'utf8');
+await writeFile(
+  new URL('_headers', root),
+  buildHeaders(pages, { robotsNoindex: process.env.DEPLOY_ENV === 'staging' }),
+  'utf8',
+);
 console.log(`Generated out/_headers for ${pages.length} HTML pages`);
