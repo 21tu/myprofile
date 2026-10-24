@@ -54,8 +54,8 @@ describe('UI-DESIGN-001 / FR-002–006, FR-011', () => {
     );
     expect(within(skills).queryByRole('progressbar')).not.toBeInTheDocument();
   });
-  it('marks sample data and only shows the mascot placeholder', () => {
-    const { container } = render(<Home />);
+  it('marks sample data and shows the temporary mascot image', () => {
+    render(<Home />);
     const sampleLabels = screen.getAllByText(/仮データ/);
     expect(sampleLabels.length).toBeGreaterThan(0);
     for (const label of sampleLabels) {
@@ -64,10 +64,8 @@ describe('UI-DESIGN-001 / FR-002–006, FR-011', () => {
       expect(label.parentElement).toHaveTextContent('サンプル（仮データ）');
       expect(label.parentElement).not.toHaveAttribute('aria-label');
     }
-    expect(
-      screen.getByText('マスコット画像（正式画像の提供待ち）'),
-    ).toBeVisible();
-    expect(container.querySelector('img')).toBeNull();
+    expect(screen.getByRole('img', { name: content.mascot.alt })).toBeVisible();
+    expect(screen.getByText(/仮画像（デザインコンセプトより/)).toBeVisible();
   });
   it('omits project links when href is null', () => {
     render(<Projects />);

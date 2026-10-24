@@ -1,5 +1,12 @@
 import type { Content } from './types';
 export const content: Content = {
+  mascot: {
+    status: 'placeholder',
+    src: '/mascot/fox-temp-concept.webp',
+    width: 360,
+    height: 212,
+    alt: 'ノートPCとレモネードを前にした、ベレー帽とヘッドホンのきつねのマスコット（仮画像）',
+  },
   site: {
     name: 'ポートフォリオ（準備中）',
   },
