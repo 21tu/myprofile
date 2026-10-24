@@ -33,3 +33,11 @@
   - **セキュリティヘッダー:** `public/_headers` に定義し、Static Assets で配信する。静的エクスポートでは nonce が使えないため、CSP のインラインスクリプトはビルド後にハッシュで許可する方式を #9 で検討する。`unsafe-eval` は使わない。
 - 理由: 未確定の情報を、架空のデータとして本番に出さない仕組みをコードで担保するため。Worker スクリプトを持たない構成は、攻撃対象と運用負荷が最小になる。
 - 再検討条件: 問い合わせフォーム、SSR、CMS が必要になった場合。CSP のハッシュ方式が保守しきれない場合。
+
+## ADR-005 CSP uses build-time hashes; HSTS starts without includeSubDomains
+
+- Status: Issue #9, REV-20261024-005 F-001/F-002 implemented; Claude Code re-review pending.
+- Context: Static export cannot issue per-response nonces. Next.js inline scripts and Motion SSR style attributes need exact hash allowances. Domain/subdomain operations remain unconfirmed.
+- Decision: Replace ADR-004's `public/_headers` placement with postbuild generation of `out/_headers` by `npm run build`. Emit exactly one Content-Security-Policy in the global `/*` block, covering HTML, unknown-path 404 responses and assets. Union all exported pages' SHA-256 script hashes and decoded style attribute hashes, deduplicate and sort. Keep `style-src 'self'`; use CSP Level 3 `style-src-attr 'unsafe-hashes'` with only the exported attribute value hashes. Never use unsafe-inline/unsafe-eval. Preserve the 100-rule and 2,000-character line limits and fail the build on overflow. HSTS remains `max-age=31536000`, without includeSubDomains/preload.
+- Reason: One global rule covers unknown URLs without Cloudflare combining duplicate CSP headers. Hashes allow only known exported inline content. The union permits each known value on every page, an intentional scope tradeoff. The earlier 14 blocked styles and missing unknown-path CSP are resolved by this change.
+- Reconsider when: All domains' HTTPS operation is confirmed, SSR/API/external resources become necessary, the hash union reaches Cloudflare limits, or browser support for CSP Level 3 is insufficient. Security Team review is required. Production TLS/headers remain unverified until deployment approval.

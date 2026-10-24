@@ -8,6 +8,7 @@
 | REV-20261024-002 | 2026-10-24 | PR #22 Next.js の土台 | a8c329a → 6178b28 | APPROVE（Claude Code の判定。GitHub 上は COMMENT） | 0（MINOR 1件は #17 へ） | `reviews/2026-10-24_pr-22_nextjs-scaffold.md` |
 | REV-20261024-003 | 2026-10-24 | PR #23 デザインシステムと全セクション | fe41e3e → b1ee8b6 | APPROVE（Claude Code の判定。GitHub 上は COMMENT） | 0（MINOR 1件は #8 へ） | `reviews/2026-10-24_pr-23_ui-sections.md` |
 | REV-20261024-004 | 2026-10-24 | PR #24 モーション | 8f5b240 → aff1bba | APPROVE（Claude Code の判定。GitHub 上は COMMENT） | 0（F-002 の残りは #15 へ） | `reviews/2026-10-24_pr-24_motion.md` |
+| REV-20261024-005 | 2026-10-24 | PR #25 CSP とセキュリティヘッダー | 22ded4d → 91ba519 | APPROVE（Claude Code の判定。GitHub 上は COMMENT） | 0 | `reviews/2026-10-24_pr-25_security-headers.md` |
 
 ## 判定ルール
 - `APPROVE`: BLOCKER/MAJORが解消し、必須検査の結果を確認済み。
