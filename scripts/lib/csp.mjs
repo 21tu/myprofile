@@ -32,8 +32,11 @@ export function extractStyleAttributes(html) {
   );
 }
 
-/** @param {{file: string, html: string}[]} pages */
-export function buildHeaders(pages) {
+/**
+ * @param {{file: string, html: string}[]} pages
+ * @param {{robotsNoindex?: boolean}} options
+ */
+export function buildHeaders(pages, { robotsNoindex = false } = {}) {
   const scriptHashes = [
     ...new Set(
       pages.flatMap(({ html }) => extractInlineScripts(html).map(hashScript)),
@@ -67,7 +70,7 @@ export function buildHeaders(pages) {
   Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()
   Cross-Origin-Opener-Policy: same-origin
   X-Frame-Options: DENY
-  Content-Security-Policy: ${csp}`,
+  Content-Security-Policy: ${csp}${robotsNoindex ? '\n  X-Robots-Tag: noindex, nofollow' : ''}`,
   ];
   if (blocks.length > 100)
     throw new Error('Cloudflare _headers exceeds 100 rules');
