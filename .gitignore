@@ -1,4 +1,5 @@
 # Temporary setup materials (integrated into the repository root; not tracked)
+.lighthouseci/
 _setup/
 node_modules/
 .next/

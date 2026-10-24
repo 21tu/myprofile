@@ -1,4 +1,4 @@
-import { Menu } from 'lucide-react';
+import { MobileMenu } from './MobileMenu';
 import { content } from '@/config/content';
 import { navigation } from '@/config/navigation';
 import { Container } from '../ui/Container';
@@ -26,20 +26,7 @@ export function Header() {
           {links}
         </nav>
         <ButtonLink href="#contact">問い合わせ</ButtonLink>
-        <details className="relative md:hidden">
-          <summary
-            aria-label="ナビゲーションメニュー"
-            className="flex min-h-11 min-w-11 cursor-pointer list-none items-center justify-center text-accent"
-          >
-            <Menu aria-hidden="true" />
-          </summary>
-          <nav
-            aria-label="モバイルナビゲーション"
-            className="absolute right-0 top-full mt-3 w-48 rounded-2xl border border-accent/15 bg-navy-900 p-3"
-          >
-            {links}
-          </nav>
-        </details>
+        <MobileMenu />
       </Container>
     </header>
   );
