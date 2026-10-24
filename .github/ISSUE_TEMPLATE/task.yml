@@ -1,0 +1,29 @@
+name: Development task
+description: Work item for Claude Code to delegate to Codex
+labels: []
+body:
+  - type: textarea
+    id: goal
+    attributes:
+      label: Goal / 目的
+    validations:
+      required: true
+  - type: textarea
+    id: spec
+    attributes:
+      label: Specification IDs / 対応仕様
+      placeholder: FR-001, SEC-002 (docs/requirements.md)
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria / 受け入れ条件
+    validations:
+      required: true
+  - type: textarea
+    id: test
+    attributes:
+      label: Test and review plan / テスト・レビュー
+    validations:
+      required: true

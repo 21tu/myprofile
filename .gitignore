@@ -1,0 +1,21 @@
+# Temporary setup materials (integrated into the repository root; not tracked)
+.lighthouseci/
+_setup/
+node_modules/
+.next/
+out/
+coverage/
+.wrangler/
+test-results/
+playwright-report/
+*.tsbuildinfo
+next-env.d.ts
+
+.npm-cache/
+public/contact.vcf
+.env*
+!.env.example
+.dev.vars
+
+# Playwright MCP working files
+.playwright-mcp/
