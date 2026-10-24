@@ -10,6 +10,27 @@ const sections = [
   'Contact',
 ];
 
+for (const colorScheme of ['dark', 'light'] as const) {
+  test.describe(`hero typography ${colorScheme}`, () => {
+    test.use({ colorScheme, viewport: { width: 1440, height: 900 } });
+    test('UX-001 NFR-008: catchphrase is less than half the name heading size', async ({
+      page,
+    }) => {
+      await page.goto('/');
+      const hero = page.locator('#hero');
+      const fontSize = (heading: Locator) =>
+        heading.evaluate((element) =>
+          Number.parseFloat(getComputedStyle(element).fontSize),
+        );
+      const nameSize = await fontSize(hero.getByRole('heading', { level: 1 }));
+      const catchphraseSize = await fontSize(
+        hero.getByRole('heading', { level: 2 }),
+      );
+      expect(catchphraseSize).toBeLessThan(nameSize / 2);
+    });
+  });
+}
+
 // Inspect the rendered ancestor chain: opacity on a parent also hides its text.
 async function appearance(locator: Locator) {
   return locator.evaluate((element) => {

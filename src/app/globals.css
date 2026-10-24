@@ -40,29 +40,39 @@
     system-ui, -apple-system, 'Hiragino Sans', 'Noto Sans JP', 'Yu Gothic UI',
     sans-serif;
 }
-body {
-  margin: 0;
-  background: var(--color-bg);
-  color: var(--color-ink);
-  font-family: var(--font-sans);
-  font-size: 1rem;
-  line-height: 1.8;
-  overflow-wrap: anywhere;
-}
-:focus-visible {
-  outline: 2px solid var(--color-accent);
-  outline-offset: 3px;
-}
-h1 {
-  font-size: clamp(2.75rem, 8vw, 6.5rem);
-  line-height: 1.02;
-  letter-spacing: -0.03em;
-  font-weight: 800;
-}
-h2 {
-  font-size: clamp(2.25rem, 6vw, 4.5rem);
-  line-height: 1.05;
-  letter-spacing: -0.02em;
+@layer base {
+  body {
+    margin: 0;
+    background: var(--color-bg);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    line-height: 1.8;
+    overflow-wrap: anywhere;
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 3px;
+  }
+  h1 {
+    font-size: clamp(2.75rem, 8vw, 6.5rem);
+    line-height: 1.02;
+    letter-spacing: -0.03em;
+    font-weight: 800;
+  }
+  h2 {
+    font-size: clamp(2.25rem, 6vw, 4.5rem);
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+  }
+  p {
+    max-width: 40em;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
+  }
 }
 .skip-link {
   position: fixed;
@@ -86,9 +96,6 @@ h2 {
   border-color: var(--color-accent);
 }
 @media (prefers-reduced-motion: no-preference) {
-  html {
-    scroll-behavior: smooth;
-  }
   .interactive {
     transition:
       transform var(--dur-button) var(--ease-out-expo),
@@ -286,9 +293,6 @@ h2 {
   }
 }
 
-p {
-  max-width: 40em;
-}
 .glass {
   background-color: color-mix(in srgb, var(--bg) var(--glass), transparent);
 }

@@ -19,11 +19,16 @@ export function Projects({
       title="Projects"
       lead="制作実績のサンプルです。公開内容は準備中です。"
     >
-      <div className="grid gap-4 md:grid-cols-12">
+      <div className="grid gap-4 md:grid-cols-2">
         {projects.map((p, index) => (
           <Reveal
             key={p.name}
-            className={index === 0 ? 'md:col-span-12' : 'md:col-span-6'}
+            className={
+              index === 0 ||
+              ((projects.length - 1) % 2 === 1 && index === projects.length - 1)
+                ? 'md:col-span-2'
+                : undefined
+            }
           >
             <Card
               className={`card-reveal h-full ${index === 0 ? 'md:p-12' : ''}`}
