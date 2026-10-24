@@ -1,3 +1,4 @@
+import { Reveal } from '../motion/Reveal';
 import { content } from '@/config/content';
 import type { Project } from '@/config/types';
 import { Section } from '../ui/Section';
@@ -18,23 +19,25 @@ export function Projects({
     >
       <div className="grid gap-4 md:grid-cols-2">
         {projects.map((p) => (
-          <Card key={p.name}>
-            <h3 className="mb-3 text-xl font-bold">{p.name}</h3>
-            {p.status === 'placeholder' && <SampleBadge />}
-            <p className="my-4 text-ink-muted">{p.summary}</p>
-            <ul className="mb-5 flex flex-wrap gap-2">
-              {p.technologies.map((t) => (
-                <li key={t}>
-                  <Tag>{t}</Tag>
-                </li>
-              ))}
-            </ul>
-            {p.href && (
-              <ButtonLink href={p.href} variant="secondary">
-                詳細を見る<span className="sr-only">：{p.name}</span>
-              </ButtonLink>
-            )}
-          </Card>
+          <Reveal key={p.name}>
+            <Card className="h-full">
+              <h3 className="mb-3 text-xl font-bold">{p.name}</h3>
+              {p.status === 'placeholder' && <SampleBadge />}
+              <p className="my-4 text-ink-muted">{p.summary}</p>
+              <ul className="mb-5 flex flex-wrap gap-2">
+                {p.technologies.map((t) => (
+                  <li key={t}>
+                    <Tag>{t}</Tag>
+                  </li>
+                ))}
+              </ul>
+              {p.href && (
+                <ButtonLink href={p.href} variant="secondary">
+                  詳細を見る<span className="sr-only">：{p.name}</span>
+                </ButtonLink>
+              )}
+            </Card>
+          </Reveal>
         ))}
       </div>
     </Section>
