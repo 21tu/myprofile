@@ -39,7 +39,7 @@ export function MobileMenu() {
         <nav
           id="mobile-nav"
           aria-label="モバイルナビゲーション"
-          className="absolute right-0 top-full mt-3 w-48 rounded-2xl border border-accent/15 bg-navy-900 p-3"
+          className="glass absolute right-0 top-full mt-3 w-48 rounded-2xl border border-accent/15 bg-navy-950/70 p-3 backdrop-blur-md backdrop-saturate-150"
         >
           {navigation.map((item) => (
             <a

@@ -20,7 +20,7 @@ export function Projects({
       <div className="grid gap-4 md:grid-cols-2">
         {projects.map((p) => (
           <Reveal key={p.name}>
-            <Card className="h-full">
+            <Card className="card-reveal h-full">
               <h3 className="mb-3 text-xl font-bold">{p.name}</h3>
               {p.status === 'placeholder' && <SampleBadge />}
               <p className="my-4 text-ink-muted">{p.summary}</p>

@@ -2,17 +2,20 @@
 
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { motion, useReducedMotion } from 'motion/react';
+import { reveal, easeOutExpo } from '@/lib/motion';
 
 export function Reveal({
   children,
   delay = 0,
   className,
+  as = 'div',
 }: {
   children: ReactNode;
   delay?: number;
   className?: string;
+  as?: 'div' | 'li';
 }) {
-  const ref = useRef<HTMLDivElement>(null);
+  const ref = useRef<HTMLElement>(null);
   const [state, setState] = useState<'idle' | 'hidden' | 'shown'>('idle');
   const reduced = useReducedMotion();
 
@@ -40,25 +43,34 @@ export function Reveal({
     };
   }, [reduced]);
 
-  if (reduced) return <div className={className}>{children}</div>;
+  const Element = as === 'li' ? motion.li : motion.div;
+  const StaticElement = as;
+  if (reduced)
+    return <StaticElement className={className}>{children}</StaticElement>;
   return (
-    <motion.div
-      ref={ref}
+    <Element
+      ref={(element: HTMLDivElement | HTMLLIElement | null) => {
+        ref.current = element;
+      }}
       initial={false}
-      style={state === 'hidden' ? { opacity: 0, y: 16 } : undefined}
+      style={
+        state === 'hidden' ? { opacity: 0, y: reveal.distance } : undefined
+      }
       animate={
         state === 'idle'
           ? undefined
           : state === 'hidden'
-            ? { opacity: 0, y: 16 }
+            ? { opacity: 0, y: reveal.distance }
             : { opacity: 1, y: 0 }
       }
       transition={
-        state === 'hidden' ? { duration: 0 } : { duration: 0.5, delay }
+        state === 'hidden'
+          ? { duration: 0 }
+          : { duration: reveal.duration, ease: easeOutExpo, delay }
       }
       className={className}
     >
       {children}
-    </motion.div>
+    </Element>
   );
 }

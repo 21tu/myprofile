@@ -14,7 +14,7 @@ export function Header() {
     </a>
   ));
   return (
-    <header className="sticky top-0 z-40 border-b border-accent/15 bg-navy-950/80 backdrop-blur">
+    <header className="glass-header glass sticky top-0 z-40 bg-navy-950/70 backdrop-blur-md backdrop-saturate-150">
       <Container className="flex min-h-20 items-center justify-between gap-2">
         <a
           href="#hero"
@@ -25,7 +25,9 @@ export function Header() {
         <nav aria-label="メインナビゲーション" className="hidden md:flex">
           {links}
         </nav>
-        <ButtonLink href="#contact">問い合わせ</ButtonLink>
+        <ButtonLink magnetic href="#contact">
+          問い合わせ
+        </ButtonLink>
         <MobileMenu />
       </Container>
     </header>

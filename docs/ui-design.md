@@ -111,3 +111,55 @@
   - キーボード操作、モバイルメニュー
   - reduced-motion で、全コンテンツが表示されること
   - axe で serious / critical の違反がないこと
+
+## 8. モーション v2（#33、2026-10-25）
+既存の §6 を土台にして、質感を上げる。**文章・配色・構成・ルーティングは変えない。新しい依存は追加しない**（Motion と CSS だけを使う）。
+
+### 8.1 共通トークン（`src/app/globals.css` の `:root` と `src/lib/motion.ts` で、同じ値を共有する）
+| 名前 | 値 | 用途 |
+|---|---|---|
+| `--ease-out-expo` / `easeOutExpo` | `cubic-bezier(0.22, 1, 0.36, 1)` | すべての登場・ホバー |
+| `--dur-button` | 200ms | ボタンのホバー・押下 |
+| `--dur-card` | 300ms | カードのホバー |
+| `--dur-reveal` / `reveal.duration` | 600ms | Scroll Reveal |
+| `--dur-text` | 700ms | Kinetic Typography（1 語あたり） |
+| `reveal.distance` | 24px | Scroll Reveal / Kinetic の移動量 |
+| `stagger` | 60ms | カード・単語をずらす間隔 |
+| `magnetic.max` | 14px | Magnetic の最大の移動量 |
+| `magnetic.spring` | `{ stiffness: 260, damping: 18, mass: 0.6 }` | Magnetic の追従 |
+
+`transform` / `opacity` を基本にする。`filter: blur()` は Kinetic Typography の短い時間だけで使う。
+
+### 8.2 Effect ごとの仕様
+1. **Magnetic Hover**（`src/components/motion/Magnetic.tsx`、Client Component）
+   - 子要素を包み、ポインターの位置から中心までの差 × 0.3 だけ（最大 14px）移動させる。離れたら spring で戻る。
+   - `matchMedia('(hover: hover) and (pointer: fine)')` が true で、かつ reduced-motion でないときだけ有効にする。それ以外は子要素をそのまま返す（ラッパーの DOM を増やさない）。
+   - フォーカスやキーボードの操作では動かさない。`pointermove` は rAF でまとめ、アンマウント時にリスナーを外す。
+   - `ButtonLink` に `magnetic?: boolean` を追加して使う（Server Component のまま、`magnetic` のときだけ `Magnetic` で包む）。
+   - 適用する場所: Header の「問い合わせ」、Hero の CTA 2 つ、Contact のボタン（メール / GitHub / vCard）。
+2. **Kinetic Typography**
+   - Hero のキャッチコピー: 既存の `.kinetic-word` を、`opacity 0 → 1`、`translateY(24px → 0)`、`blur(6px → 0)`、`--dur-text`、`--ease-out-expo`、60ms ずつずらす、に変える。
+   - セクションの h2（`Section`）: 単語に分けた見出しを `Reveal` と同じ条件（画面外のときだけ）で、単語ごとに 60ms ずつ表示する（`KineticHeading`、Client Component）。見出しのアクセシブルネームは元の文と同じにする（`aria-label` は付けず、`span` で分けるだけにして、テキストを連結したときに元の文になるようにする）。
+3. **Scroll Reveal**: 既存の `Reveal` の値をトークン（24px / 600ms / easeOutExpo）にする。About の Card、Contact の中身、Work Process の各ステップ（`li`）にも適用する（ステップは 60ms ずつずらす）。SSR では常に表示するという仕様（§6）は変えない。
+4. **Glassmorphism**
+   - Header: 背景 `navy-950/70`、`backdrop-blur-md` と `backdrop-saturate-150`、下端にハイライトの線（アクセント色 15% → 透明のグラデーション）。
+   - スクロールによる変化: `@supports (animation-timeline: scroll())` のときだけ、スクロール量 0〜120px で背景の不透明度と影を増やす（JS は使わない）。対応していないブラウザでは今のまま。
+   - モバイルメニューのパネル: 同じガラスの表現にする。
+   - 文字と背景のコントラストは今より下げない。
+5. **Interactive Gradient**（Hero、`src/components/motion/HeroGradient.tsx`、Client Component）
+   - 既存の `.hero-glow`（`Parallax` の中）はそのまま残し、その下に、同じ色調の 2 つ目の放射グラデーションを重ねる。
+   - 位置は CSS 変数 `--gx` / `--gy` で決める。`pointermove` は rAF でまとめ、`element.style.setProperty` で更新する（CSSOM を使うので CSP の影響を受けない）。変化はゆっくりにする（CSS transition 600ms）。
+   - 時間による変化: CSS keyframes で 20 秒の周期で色の位置をゆっくり動かす。
+   - `(pointer: coarse)` と reduced-motion では、ポインターに反応せず、アニメーションもしない（静止したグラデーション）。
+   - `aria-hidden`、`pointer-events: none`。文字のコントラストを下げない（不透明度は 0.18 以下）。
+6. **Project Card Hover Reveal**（`Projects`）
+   - カードにホバーまたは `:focus-within` したとき: 4px 持ち上げる、境界線をアクセント色にする、上から光のハイライト（`::before` のグラデーション）をフェードインする、詳細リンクの矢印を少し右へ動かす。`--dur-card`。
+   - カードの高さとレイアウトは変えない（`transform` と `opacity` だけ）。
+   - `(hover: none)` では、詳細リンクなどの情報を常に表示する（今も常に表示しているので、隠さない）。
+7. **Page Transition**: 採用しない（1 ページ構成のため）。
+
+### 8.3 アクセシビリティと性能
+- reduced-motion: 8.2 の動きをすべて止める（静止した最終状態）。
+- JS がない環境: すべてのコンテンツが表示され、リンクも動く。
+- 追加する Client Component は `Magnetic`、`KineticHeading`、`HeroGradient` の 3 つだけ。セクション自体は Server Component のまま。
+- 目標: Lighthouse Performance ≥ 0.9、CLS ≤ 0.1、CSP 違反 0 件。

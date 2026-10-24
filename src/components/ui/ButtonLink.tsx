@@ -1,18 +1,21 @@
 import type { ReactNode } from 'react';
+import { Magnetic } from '../motion/Magnetic';
 import { ExternalLink } from 'lucide-react';
 export function ButtonLink({
   href,
   children,
   variant = 'primary',
   download,
+  magnetic = false,
 }: {
   href: string;
   children: ReactNode;
   variant?: 'primary' | 'secondary';
   download?: string;
+  magnetic?: boolean;
 }) {
   const external = /^https?:/.test(href);
-  return (
+  const link = (
     <a
       href={href}
       download={download}
@@ -29,4 +32,5 @@ export function ButtonLink({
       )}
     </a>
   );
+  return magnetic ? <Magnetic>{link}</Magnetic> : link;
 }
