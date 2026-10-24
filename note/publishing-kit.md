@@ -13,6 +13,7 @@ Next.jsでポートフォリオを作りたいエンジニア、AIコーディ�
 - 第2回：Next.js × Cloudflareの実装とレビューで見つかった問題（`article-02-implementation-review.md`）
 - 第3回：Claude CodeによるコードレビューとCodexの役割分担
 - 第4回：セキュリティ・アクセシビリティ・性能の検証結果
+- 番外編1：コードを書く前に、AIと一緒に開発の流れを整えた話（`article-ex1-dev-workflow-setup.md`）
 
 ## 画像掲載ルール（必須）
 - **note記事1本につき、関連する画像を最低1枚掲載する。** アイキャッチ画像のみではなく、可能なら本文にも画像を入れる。
@@ -28,6 +29,7 @@ Next.jsでポートフォリオを作りたいエンジニア、AIコーディ�
 - `images/design-comparison-four-styles.png`：4案比較画像。第1回の記事の図2。
 - `images/impl-ui-mobile-375.png`：**実装済みの画面のスクリーンショット**（375px のファーストビュー、仮データ）。第2回の図1。
 - `images/impl-ui-desktop-1440-full.png`：**実装済みの画面のスクリーンショット**（1440px のページ全体、仮データ）。第2回の図2。
+- `images/ex1-workflow-overview.png`：開発の流れの図（実際に通した流れのみ）。番外編1の図1。
 
 ## 掲載素材のチェックリスト
 - [x] デザイン参考画像2点をローカル記事下書きに挿入（公開前の権利確認は別途必要）
