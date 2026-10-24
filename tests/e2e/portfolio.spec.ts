@@ -24,6 +24,26 @@ async function appearance(locator: Locator) {
   });
 }
 
+// Include text descendants: a heading can animate individual words independently.
+async function textVisibility(locator: Locator) {
+  return locator.evaluate((element) => {
+    let minimumOpacity = 1;
+    for (const node of [element, ...element.querySelectorAll('*')]) {
+      if (node !== element && !node.textContent?.trim()) continue;
+      let opacity = 1;
+      for (
+        let ancestor: Element | null = node;
+        ancestor;
+        ancestor = ancestor.parentElement
+      ) {
+        opacity *= Number(getComputedStyle(ancestor).opacity);
+      }
+      minimumOpacity = Math.min(minimumOpacity, opacity);
+    }
+    return minimumOpacity;
+  });
+}
+
 for (const width of [320, 375, 768, 1440]) {
   test.describe(`${width}px`, () => {
     test.use({ viewport: { width, height: 900 } });
@@ -75,15 +95,13 @@ test.describe('phone', () => {
     );
     const hero = page.getByRole('heading', { level: 1 });
     const contact = page.getByRole('heading', { name: 'Contact', exact: true });
-    expect((await appearance(hero)).opacity).toBe(1);
-    await expect
-      .poll(async () => (await appearance(contact)).opacity)
-      .toBeLessThan(1);
+    expect(await textVisibility(hero)).toBe(1);
+    expect(await textVisibility(contact)).toBeLessThan(1);
     await contact.scrollIntoViewIfNeeded();
     await expect
-      .poll(async () => (await appearance(contact)).opacity, { timeout: 2000 })
+      .poll(async () => textVisibility(contact), { timeout: 2000 })
       .toBe(1);
-    expect((await appearance(hero)).opacity).toBe(1);
+    expect(await textVisibility(hero)).toBe(1);
   });
 });
 
@@ -163,7 +181,7 @@ test('FR-009: reduced motion keeps all headings and card text opaque and untrans
   for (const element of await content.all()) {
     await element.scrollIntoViewIfNeeded();
     const state = await appearance(element);
-    expect(state.opacity).toBe(1);
+    expect(await textVisibility(element)).toBe(1);
     expect(
       state.transforms.every(
         (t) =>
