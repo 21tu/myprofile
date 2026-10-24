@@ -43,6 +43,13 @@ export interface Contact {
 }
 export interface Content {
   site: { name: string };
+  mascot: {
+    status: ContentStatus;
+    src: string | null;
+    width: number;
+    height: number;
+    alt: string;
+  };
   profile: Profile;
   about: About;
   services: Service[];
