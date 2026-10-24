@@ -10,6 +10,27 @@ const sections = [
   'Contact',
 ];
 
+for (const colorScheme of ['dark', 'light'] as const) {
+  test.describe(`hero typography ${colorScheme}`, () => {
+    test.use({ colorScheme, viewport: { width: 1440, height: 900 } });
+    test('UX-001 NFR-008: catchphrase is less than half the name heading size', async ({
+      page,
+    }) => {
+      await page.goto('/');
+      const hero = page.locator('#hero');
+      const fontSize = (heading: Locator) =>
+        heading.evaluate((element) =>
+          Number.parseFloat(getComputedStyle(element).fontSize),
+        );
+      const nameSize = await fontSize(hero.getByRole('heading', { level: 1 }));
+      const catchphraseSize = await fontSize(
+        hero.getByRole('heading', { level: 2 }),
+      );
+      expect(catchphraseSize).toBeLessThan(nameSize / 2);
+    });
+  });
+}
+
 // Inspect the rendered ancestor chain: opacity on a parent also hides its text.
 async function appearance(locator: Locator) {
   return locator.evaluate((element) => {
@@ -278,4 +299,35 @@ test('FR-010: unknown URL returns the accessible 404 page', async ({
   await expect(
     page.getByRole('heading', { name: 'ページが見つかりません' }),
   ).toBeVisible();
+});
+
+test.describe('ADR-008 light theme', () => {
+  test.use({ colorScheme: 'light' });
+  for (const width of [375, 1440]) {
+    test.describe(`${width}px`, () => {
+      test.use({ viewport: { width, height: 900 } });
+      test('NFR-001 NFR-003: axe and horizontal overflow', async ({
+        page,
+      }, testInfo) => {
+        await page.goto('/');
+        expect(
+          await page.evaluate(
+            () => document.documentElement.scrollWidth <= innerWidth,
+          ),
+        ).toBe(true);
+        const results = await new AxeBuilder({ page })
+          .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'])
+          .analyze();
+        await testInfo.attach('axe-light-results', {
+          body: JSON.stringify(results, null, 2),
+          contentType: 'application/json',
+        });
+        expect(
+          results.violations.filter(
+            (v) => v.impact === 'serious' || v.impact === 'critical',
+          ),
+        ).toEqual([]);
+      });
+    });
+  }
 });

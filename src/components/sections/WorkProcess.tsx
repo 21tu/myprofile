@@ -5,19 +5,19 @@ import { content } from '@/config/content';
 import { Section } from '../ui/Section';
 export function WorkProcess() {
   return (
-    <Section id="process" title="Work Process">
-      <div className="relative ml-5">
+    <Section index="05" id="process" title="Work Process">
+      <div className="relative ml-7">
         <ol className="grid auto-rows-fr border-l border-accent/40">
           {content.process.map((s, i) => (
             <Reveal
               as="li"
               delay={i * stagger}
               key={s.title}
-              className="relative pb-8 pl-10 last:pb-0"
+              className="relative pb-10 pl-12 last:pb-0"
             >
               <span
                 aria-hidden="true"
-                className="absolute -left-5 flex size-10 items-center justify-center rounded-full border border-accent/40 bg-navy-800 text-ink-muted"
+                className="absolute -left-7 flex size-14 items-center justify-center text-2xl font-bold rounded-full border border-accent/40 bg-card text-ink-muted"
               >
                 {i + 1}
               </span>

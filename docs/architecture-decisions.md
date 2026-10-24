@@ -52,3 +52,15 @@
 - 理由: オーナーの判断によって、レイアウトとモーションを実際のキャラクターで確認できるようにするため。本番に流出しないことは、既存の公開前チェックで担保する。
 - リスク: AI生成画像の利用条件と権利は未確認（オーナーが確認する）。解像度が低いため、高密度ディスプレイではぼやける。
 - 再検討条件: 正式画像が提供されたら、この ADR を「廃止」にして差し替える（#29）。
+
+## ADR-008 配色を意味のあるトークンにし、OS に合わせたライト / ダークにする（UX-001 の改訂）
+- 状態: 採用（#35）
+- 背景: オーナーの決定（2026-10-25）。ネイビーの配色を保ったまま Editorial Minimalism 化し、ライト / ダークを OS の設定（`prefers-color-scheme`）に自動で従わせる。切り替えボタンは置かない。
+- 決定:
+  - 色は意味のあるトークン `bg / surface / card / ink / ink-muted / line / accent / on-accent` で参照する（Tailwind の `@theme` から CSS 変数を参照する）。
+  - ダーク（既定。今と同じ）: bg #0B1626 / surface #111F33 / card #192A40 / ink #F5F7FA / ink-muted #A8B5C5 / accent #58B8FF / on-accent #0B1626
+  - ライト（`@media (prefers-color-scheme: light)`）: bg #F6F4EF / surface #EEEBE4 / card #FFFFFF / ink #0B1626 / ink-muted #4B5565 / line #D9D6CF / accent #1D63A6 / on-accent #FFFFFF
+  - コントラスト比（計算値）は、ライト・ダークの全組み合わせで 4.5:1 以上（最低はライトの surface × accent の 5.21:1）。
+  - `color-scheme: light dark` を宣言し、`themeColor` はテーマごとに 2 つ設定する。
+- 理由: JS もボタンも不要で、ちらつきなく切り替えられ、CSP にも影響しない。ネイビーの印象（UX-001）を、ダークでもライトの文字色でも保てる。
+- 再検討条件: 手動の切り替えボタンが必要になったとき（`data-theme` と、ちらつきを防ぐ処理が必要になる）。

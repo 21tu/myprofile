@@ -17,9 +17,9 @@ export function Hero() {
     >
       <Parallax decorative className="hero-glow absolute -inset-8 -z-10" />
       <HeroGradient />
-      <Container className="grid items-center gap-8 lg:grid-cols-2">
-        <div>
-          <h1 className="font-bold">{p.name}</h1>
+      <Container className="grid items-center gap-8 md:grid-cols-12">
+        <div className="min-w-0 md:col-span-7">
+          <h1>{p.name}</h1>
           <p className="mt-2 text-ink-muted">{p.title}</p>
           <ul className="mt-3 flex flex-wrap gap-2">
             {p.focusAreas.map((area) => (
@@ -63,9 +63,19 @@ export function Hero() {
             </div>
           )}
         </div>
-        <Parallax>
+        <Parallax className="min-w-0 md:col-span-5">
           <MascotSlot />
         </Parallax>
+      </Container>
+      <Container className="mt-10">
+        <a
+          href="#services"
+          aria-label="スクロールして続きを見る"
+          className="interactive inline-flex min-h-11 items-center gap-4 text-sm text-ink-muted"
+        >
+          <span aria-hidden="true" className="h-px w-12 bg-line" />
+          スクロール
+        </a>
       </Container>
     </section>
   );

@@ -3,8 +3,6 @@ import { Reveal } from '../motion/Reveal';
 import { content } from '@/config/content';
 import type { SkillCategory } from '@/config/types';
 import { Section } from '../ui/Section';
-import { Card } from '../ui/Card';
-import { Tag } from '../ui/Tag';
 import { SampleBadge } from '../ui/SampleBadge';
 const categories: SkillCategory[] = [
   'Language',
@@ -14,23 +12,33 @@ const categories: SkillCategory[] = [
 ];
 export function Skills() {
   return (
-    <Section id="skills" title="Skills">
-      <div className="grid gap-4 sm:grid-cols-2">
+    <Section index="03" id="skills" title="Skills">
+      <div className="grid gap-8">
         {categories.map((category, i) => (
           <Reveal key={category} delay={i * stagger} className="h-full">
-            <Card className="h-full">
-              <h3 className="mb-4 text-xl font-bold">{category}</h3>
-              <ul className="flex flex-wrap gap-2">
+            <div className="border-t border-line pt-6">
+              <h3 className="mb-4 text-xs font-bold uppercase tracking-widest">
+                {category}
+              </h3>
+              <ul className="flex flex-wrap items-baseline gap-x-3 gap-y-2 text-2xl md:text-3xl">
                 {content.skills
                   .filter((s) => s.category === category)
-                  .map((s) => (
+                  .map((s, index) => (
                     <li key={s.name}>
-                      <Tag>{s.name}</Tag>
+                      {index > 0 && (
+                        <span
+                          aria-hidden="true"
+                          className="mr-3 text-ink-muted"
+                        >
+                          /
+                        </span>
+                      )}
+                      <span>{s.name}</span>
                       {s.status === 'placeholder' && <SampleBadge />}
                     </li>
                   ))}
               </ul>
-            </Card>
+            </div>
           </Reveal>
         ))}
       </div>
