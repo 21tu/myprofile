@@ -1,0 +1,16 @@
+out/
+.next/
+node_modules/
+package-lock.json
+_setup/
+note/images/
+coverage/
+playwright-report/
+test-results/
+.wrangler/
+next-env.d.ts
+docs/**/*.md
+note/**/*.md
+reviews/**/*.md
+AGENTS.md
+CLAUDE.md
