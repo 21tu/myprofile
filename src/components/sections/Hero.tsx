@@ -1,3 +1,4 @@
+import { HeroGradient } from '../motion/HeroGradient';
 import type { CSSProperties } from 'react';
 import { Parallax } from '../motion/Parallax';
 import { content } from '@/config/content';
@@ -15,6 +16,7 @@ export function Hero() {
       className="relative isolate scroll-mt-28 overflow-hidden py-6 sm:py-16"
     >
       <Parallax decorative className="hero-glow absolute -inset-8 -z-10" />
+      <HeroGradient />
       <Container className="grid items-center gap-8 lg:grid-cols-2">
         <div>
           <h1 className="font-bold">{p.name}</h1>
@@ -47,8 +49,10 @@ export function Hero() {
             )}
           </h2>
           <div className="mt-5 flex flex-wrap gap-3">
-            <ButtonLink href="#projects">制作実績を見る</ButtonLink>
-            <ButtonLink href="#contact" variant="secondary">
+            <ButtonLink magnetic href="#projects">
+              制作実績を見る
+            </ButtonLink>
+            <ButtonLink magnetic href="#contact" variant="secondary">
               問い合わせ
             </ButtonLink>
           </div>

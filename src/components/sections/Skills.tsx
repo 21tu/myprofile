@@ -1,3 +1,4 @@
+import { stagger } from '@/lib/motion';
 import { Reveal } from '../motion/Reveal';
 import { content } from '@/config/content';
 import type { SkillCategory } from '@/config/types';
@@ -16,7 +17,7 @@ export function Skills() {
     <Section id="skills" title="Skills">
       <div className="grid gap-4 sm:grid-cols-2">
         {categories.map((category, i) => (
-          <Reveal key={category} delay={i * 0.06} className="h-full">
+          <Reveal key={category} delay={i * stagger} className="h-full">
             <Card className="h-full">
               <h3 className="mb-4 text-xl font-bold">{category}</h3>
               <ul className="flex flex-wrap gap-2">

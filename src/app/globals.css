@@ -1,4 +1,17 @@
 @import 'tailwindcss';
+:root {
+  --ease-out-expo: cubic-bezier(0.22, 1, 0.36, 1);
+  --dur-button: 200ms;
+  --dur-card: 300ms;
+  --dur-reveal: 600ms;
+  --dur-text: 700ms;
+  --reveal-distance: 24px;
+  --stagger: 60ms;
+  --magnetic-max: 14px;
+  --magnetic-stiffness: 260;
+  --magnetic-damping: 18;
+  --magnetic-mass: 0.6;
+}
 @theme {
   --color-navy-950: #0b1626;
   --color-navy-900: #111f33;
@@ -56,12 +69,16 @@ h2 {
   html {
     scroll-behavior: smooth;
   }
-  .interactive,
+  .interactive {
+    transition:
+      transform var(--dur-button) var(--ease-out-expo),
+      border-color var(--dur-button) var(--ease-out-expo),
+      filter var(--dur-button) var(--ease-out-expo);
+  }
   .card {
     transition:
-      transform 150ms,
-      border-color 150ms,
-      filter 150ms;
+      transform var(--dur-card) var(--ease-out-expo),
+      border-color var(--dur-card) var(--ease-out-expo);
   }
   .interactive:hover,
   .interactive:focus-visible,
@@ -92,20 +109,22 @@ h2 {
 @keyframes fade-up {
   from {
     opacity: 0;
-    transform: translateY(16px);
+    transform: translateY(var(--reveal-distance));
+    filter: blur(6px);
   }
   to {
     opacity: 1;
     transform: translateY(0);
+    filter: blur(0);
   }
 }
 @media (prefers-reduced-motion: no-preference) {
   .kinetic-word {
-    animation: fade-up 0.5s both;
-    animation-delay: calc(var(--i) * 60ms);
+    animation: fade-up var(--dur-text) var(--ease-out-expo) both;
+    animation-delay: calc(var(--i) * var(--stagger));
   }
   .card-icon {
-    transition: transform 150ms;
+    transition: transform var(--dur-card) var(--ease-out-expo);
   }
   .group:hover .card-icon,
   .group:focus-within .card-icon {
@@ -121,5 +140,119 @@ h2 {
   }
   .process-number {
     opacity: 1 !important;
+  }
+}
+
+.heading-segment {
+  display: inline;
+}
+.heading-word {
+  display: inline-block;
+  white-space: pre;
+}
+/* Preserve sticky positioning supplied by the header utility. */
+.glass-header {
+  position: sticky;
+}
+.glass::after {
+  content: '';
+  position: absolute;
+  inset: auto 0 0;
+  height: 1px;
+  background: linear-gradient(90deg, rgb(88 184 255 / 0.15), transparent);
+  pointer-events: none;
+}
+@supports (animation-timeline: scroll()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .glass-header {
+      animation: header-glass linear both;
+      animation-timeline: scroll();
+      animation-range: 0px 120px;
+    }
+  }
+}
+@keyframes header-glass {
+  to {
+    background-color: rgb(11 22 38 / 0.95);
+    box-shadow: 0 8px 24px rgb(0 0 0 / 0.2);
+  }
+}
+@property --gx {
+  syntax: '<percentage>';
+  inherits: false;
+  initial-value: 70%;
+}
+@property --gy {
+  syntax: '<percentage>';
+  inherits: false;
+  initial-value: 40%;
+}
+.hero-gradient {
+  opacity: 0.18;
+  background: radial-gradient(
+    ellipse at var(--gx, 70%) var(--gy, 40%),
+    var(--color-accent),
+    transparent 65%
+  );
+}
+@media (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .hero-gradient {
+    transition:
+      --gx var(--dur-reveal) var(--ease-out-expo),
+      --gy var(--dur-reveal) var(--ease-out-expo);
+    animation: gradient-drift 20s var(--ease-out-expo) infinite alternate;
+  }
+}
+@keyframes gradient-drift {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(-3%, 3%);
+  }
+}
+.card-reveal {
+  position: relative;
+  isolation: isolate;
+}
+.card-reveal::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  background: linear-gradient(180deg, rgb(88 184 255 / 0.12), transparent 60%);
+}
+.card-reveal:hover::before,
+.card-reveal:focus-within::before {
+  opacity: 1;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .card-reveal::before {
+    transition: opacity var(--dur-card) var(--ease-out-expo);
+  }
+  .card-reveal a svg {
+    transition: transform var(--dur-card) var(--ease-out-expo);
+  }
+  .card-reveal:hover,
+  .card-reveal:focus-within {
+    transform: translateY(-4px);
+  }
+  .card-reveal:hover a svg,
+  .card-reveal:focus-within a svg {
+    transform: translateX(3px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .magnetic,
+  .heading-word {
+    transform: none !important;
+  }
+  .heading-word {
+    opacity: 1 !important;
+    filter: none !important;
   }
 }

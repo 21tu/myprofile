@@ -1,3 +1,4 @@
+import { stagger } from '@/lib/motion';
 import { Reveal } from '../motion/Reveal';
 import { BrainCircuit, Cloud, CodeXml, Workflow } from 'lucide-react';
 import { content } from '@/config/content';
@@ -12,7 +13,7 @@ export function Services() {
         {content.services.map((s, i) => {
           const Icon = icons[s.icon];
           return (
-            <Reveal key={s.id} delay={i * 0.06} className="h-full">
+            <Reveal key={s.id} delay={i * stagger} className="h-full">
               <Card className="group h-full">
                 <Icon
                   aria-hidden="true"

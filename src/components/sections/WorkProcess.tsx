@@ -1,3 +1,5 @@
+import { Reveal } from '../motion/Reveal';
+import { stagger } from '@/lib/motion';
 import { ProcessProgress } from '../motion/ProcessProgress';
 import { content } from '@/config/content';
 import { Section } from '../ui/Section';
@@ -7,7 +9,12 @@ export function WorkProcess() {
       <div className="relative ml-5">
         <ol className="grid auto-rows-fr border-l border-accent/40">
           {content.process.map((s, i) => (
-            <li key={s.title} className="relative pb-8 pl-10 last:pb-0">
+            <Reveal
+              as="li"
+              delay={i * stagger}
+              key={s.title}
+              className="relative pb-8 pl-10 last:pb-0"
+            >
               <span
                 aria-hidden="true"
                 className="absolute -left-5 flex size-10 items-center justify-center rounded-full border border-accent/40 bg-navy-800 text-ink-muted"
@@ -16,7 +23,7 @@ export function WorkProcess() {
               </span>
               <h3 className="text-xl font-bold">{s.title}</h3>
               <p className="mt-2 text-ink-muted">{s.description}</p>
-            </li>
+            </Reveal>
           ))}
         </ol>
         <ProcessProgress count={content.process.length} />
