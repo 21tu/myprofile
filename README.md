@@ -16,7 +16,7 @@ Codexが実装し、**Claude Codeが正式にコードレビュー**する。仕
 7. `docs/review-record-template.md`：レビュー記録フォーマット
 8. `docs/review-index.md`：レビュー履歴
 9. `docs/traceability.md`：仕様IDからコード・テストへの対応
-10. `note/`：note記事の下書き・公開キット・開発ログテンプレート
+10. `note/`：note記事の作成手順・下書き・公開キット・開発ログテンプレート（`note/article-procedure.md` から読む）
 
 ## 毎回の流れ
 
