@@ -12,9 +12,13 @@ for (const colorScheme of ['light', 'dark'] as const) {
           .getByRole('banner')
           .getByRole('link', { name: '問い合わせ', exact: true });
         await expect(cta).toHaveCSS('white-space', 'nowrap');
-        const box = await cta.boundingBox();
-        expect(box?.height).toBeGreaterThanOrEqual(44);
-        expect(box?.height).toBeLessThan(60);
+        await expect(cta).toBeVisible();
+        await expect
+          .poll(async () => (await cta.boundingBox())?.height ?? 0)
+          .toBeGreaterThanOrEqual(44);
+        await expect
+          .poll(async () => (await cta.boundingBox())?.height ?? 0)
+          .toBeLessThan(60);
         await expect(cta).not.toHaveCSS(
           'background-color',
           'rgb(88, 184, 255)',
