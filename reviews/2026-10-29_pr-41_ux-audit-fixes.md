@@ -57,7 +57,8 @@
 - 未解決のBLOCKER/MAJOR: なし
 - 例外・リスク受容（承認者と理由）: なし
 - 未検証事項: Lighthouse（CLS / Performance。CI で確認）、実機（iOS Safari の慣性スクロールとタッチでのメニュー）、Chrome 以外のブラウザ、スクリーンリーダー
-- 次のアクション: GitHub Actions の結果を確認する。オーナーのマージ承認を待つ（ベースは PR #38 のブランチ）。Codex のサンドボックスから `.git` に書き込めない件と、Windows で `CreateProcessWithLogonW failed: 1909` が出て Codex の実行が途中で止まった件は、運用上の課題として残す
+- GitHub Actions: run 40838501505（`1bbbbe7`）で quality / security / e2e / lighthouse がすべて success。それより前の run 40836343691（`d5af3e7`）の e2e の失敗は F-005（`bfe0422` で解消）。
+- 次のアクション: オーナーのマージ承認を待つ（ベースは PR #38 のブランチ）。Codex のサンドボックスから `.git` に書き込めない件と、Windows で `CreateProcessWithLogonW failed: 1909` が出て Codex の実行が途中で止まった件は、運用上の課題として残す
 - 本番デプロイ承認: 未取得
 
 > 記録には秘密情報・個人情報・本番トークンを記載しない。検証していない事項をPASSにしない。
