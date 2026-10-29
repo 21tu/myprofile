@@ -50,13 +50,13 @@ test.describe('Issue #40 mobile', () => {
       .poll(async () => (await heading.boundingBox())?.y ?? 0)
       .toBeGreaterThanOrEqual(64);
   });
-  test('NFR-002: outside pointer and scroll dismiss the menu', async ({
+  test('NFR-002: outside pointer and wheel dismiss the menu', async ({
     page,
   }) => {
     await page.goto('/');
     const button = page.getByRole('button', { name: 'ナビゲーションメニュー' });
     await button.click();
-    await page.locator('h1').click();
+    await page.mouse.click(8, 400);
     await expect(button).toHaveAttribute('aria-expanded', 'false');
     await button.click();
     await page.mouse.wheel(0, 100);

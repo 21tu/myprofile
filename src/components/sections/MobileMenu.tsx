@@ -27,16 +27,15 @@ export function MobileMenu() {
       )
         setOpen(false);
     }
-    const openedAtScrollY = window.scrollY;
-    function handleScroll() {
-      if (Math.abs(window.scrollY - openedAtScrollY) >= 48) setOpen(false);
+    function handleWheel() {
+      setOpen(false);
     }
     document.addEventListener('pointerdown', handlePointerDown);
-    window.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener('wheel', handleWheel, { passive: true });
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
       document.removeEventListener('pointerdown', handlePointerDown);
-      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('wheel', handleWheel);
     };
   }, [open]);
 

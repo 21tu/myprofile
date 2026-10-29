@@ -90,27 +90,42 @@ describe('Issue #40 NFR-002 dismissal lifecycle', () => {
     expect(remove).toHaveBeenCalledWith('pointerdown', expect.any(Function));
     expect(remove).toHaveBeenCalledWith('keydown', expect.any(Function));
   });
-  it.each([48, -48])(
-    'closes after moving %ipx from the opening position and cleans up',
-    (distance) => {
-      const remove = vi.spyOn(window, 'removeEventListener');
-      const { unmount } = render(<MobileMenu />);
-      const button = screen.getByRole('button');
-      vi.spyOn(window, 'scrollY', 'get').mockReturnValue(200);
-      fireEvent.click(button);
-      vi.spyOn(window, 'scrollY', 'get').mockReturnValue(
-        200 + Math.sign(distance) * 47,
-      );
+  it('FR-011: stays open during scroll events regardless of distance', () => {
+    render(<MobileMenu />);
+    const button = screen.getByRole('button');
+    fireEvent.click(button);
+    for (const scrollY of [47, 48, 800, 0]) {
+      vi.spyOn(window, 'scrollY', 'get').mockReturnValue(scrollY);
       fireEvent.scroll(window);
       expect(button).toHaveAttribute('aria-expanded', 'true');
-      vi.spyOn(window, 'scrollY', 'get').mockReturnValue(200 + distance);
-      fireEvent.scroll(window);
-      expect(button).toHaveAttribute('aria-expanded', 'false');
-      expect(remove).toHaveBeenCalledWith('scroll', expect.any(Function));
-      fireEvent.click(button);
-      remove.mockClear();
-      unmount();
-      expect(remove).toHaveBeenCalledWith('scroll', expect.any(Function));
-    },
-  );
+    }
+  });
+
+  it('closes on wheel and removes the listener after closing and unmounting', () => {
+    const add = vi.spyOn(window, 'addEventListener');
+    const remove = vi.spyOn(window, 'removeEventListener');
+    const { unmount } = render(<MobileMenu />);
+    const button = screen.getByRole('button');
+    const wheelListeners = () =>
+      add.mock.calls.filter(([type]) => type === 'wheel');
+    expect(wheelListeners()).toHaveLength(0);
+
+    fireEvent.click(button);
+    expect(wheelListeners()).toHaveLength(1);
+    const firstListener = wheelListeners()[0]?.[1];
+    expect(add).toHaveBeenCalledWith('wheel', firstListener, { passive: true });
+    fireEvent.wheel(window, { deltaY: 1 });
+    expect(button).toHaveAttribute('aria-expanded', 'false');
+    expect(remove).toHaveBeenCalledWith('wheel', firstListener);
+
+    fireEvent.wheel(window, { deltaY: 100 });
+    expect(wheelListeners()).toHaveLength(1);
+    fireEvent.click(button);
+    expect(button).toHaveAttribute('aria-expanded', 'true');
+    expect(wheelListeners()).toHaveLength(2);
+    const secondListener = wheelListeners()[1]?.[1];
+    remove.mockClear();
+    unmount();
+    expect(remove).toHaveBeenCalledWith('wheel', secondListener);
+  });
 });
