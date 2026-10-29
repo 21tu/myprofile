@@ -37,7 +37,12 @@ export function KineticHeading({
   }, [reduced]);
 
   return (
-    <h2 ref={ref} id={id} className="mb-4 font-bold kinetic-heading">
+    <h2
+      ref={ref}
+      id={id}
+      tabIndex={-1}
+      className="mb-4 scroll-mt-24 font-bold kinetic-heading"
+    >
       {Array.from(
         new Intl.Segmenter('ja', { granularity: 'word' }).segment(children),
         ({ segment }, i) =>

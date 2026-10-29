@@ -20,14 +20,16 @@ export function Header() {
           href="#hero"
           className="interactive flex min-h-11 min-w-0 items-center text-sm font-bold md:max-w-40"
         >
-          {content.site.name}
+          <span className="truncate">{content.site.name}</span>
         </a>
         <nav aria-label="メインナビゲーション" className="hidden md:flex">
           {links}
         </nav>
-        <ButtonLink magnetic href="#contact">
-          問い合わせ
-        </ButtonLink>
+        <div className="shrink-0 whitespace-nowrap">
+          <ButtonLink magnetic href="#contact" variant="secondary">
+            問い合わせ
+          </ButtonLink>
+        </div>
         <MobileMenu />
       </Container>
     </header>
