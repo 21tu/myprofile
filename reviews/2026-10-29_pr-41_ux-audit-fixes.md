@@ -9,7 +9,7 @@
 - 対応仕様ID: NFR-002, NFR-003, FR-002, FR-003, FR-008, FR-009, UX-002
 - 変更概要・背景: UX監査 REV-20261029-001 の A-001〜A-005、A-008 への対応。A-005 は 2026-10-29 のオーナー決定（モバイルではきつねを小さくし、登場の動きで目立たせる。形・色は変えない）
 - 参照ADR: ADR-009。設計: `docs/ui-design.md` §4, §10.7
-- 判定: `REQUEST_CHANGES`（自分のアカウントの PR なので、GitHub 上は COMMENT で投稿）
+- 判定: `APPROVE`（2026-10-29、`bfe0422`。初回 `eaca864` は REQUEST_CHANGES。自分のアカウントの PR なので、GitHub 上は COMMENT で投稿）
 
 ## 1. 変更差分
 | ファイル | 変更内容 | 理由 | 仕様ID |
@@ -41,20 +41,23 @@
 | 指摘ID | 重大度 | 仕様ID | ファイル:行 | 問題・再現方法 | 影響 | 修正案 | 状態 |
 |---|---|---|---|---|---|---|---|
 | F-001 | MAJOR | FR-008（§10.3） | `src/app/globals.css:409-411` | 登場のあいさつとクリックの `wave` が同じ `fox-wave` を使うので、`data-reaction="wave"` になっても `animation-name` が変わらず再開されない。Chrome で `.paw` の `getAnimations()` が空になることを確認（要素を作り直すと running） | クリックの4種類のリアクションのうち、wave が二度と再生されない | あいさつ用に `@keyframes fox-greet` を分ける。wave のときは `fox-greet …, fox-wave …` と一覧に追加する。E2E で、登場のあとの wave で `.paw` のアニメーションが running であることを確かめる | RESOLVED（b18e0d4） |
-| F-002 | MAJOR | NFR-002, FR-011 | `src/components/sections/MobileMenu.tsx:30-34` | スクロールが1回でも起きると閉じるので、スムーズスクロールの途中に開くと 400ms 以内に閉じる。既存の E2E「FR-011: navigation reaches every section」（375px）がタイムアウトする | メニューから続けて移動できない。CI が失敗する | 開いたときの `scrollY` から 48px 程度以上動いたときだけ閉じる。ユニットテストを追加する | OPEN（b18e0d4 でも未解消。下の再レビュー履歴） |
+| F-002 | MAJOR | NFR-002, FR-011 | `src/components/sections/MobileMenu.tsx:30-34` | スクロールが1回でも起きると閉じるので、スムーズスクロールの途中に開くと 400ms 以内に閉じる。既存の E2E「FR-011: navigation reaches every section」（375px）がタイムアウトする | メニューから続けて移動できない。CI が失敗する | 開いたときの `scrollY` から 48px 程度以上動いたときだけ閉じる。ユニットテストを追加する | RESOLVED（440d654） |
 | F-003 | MAJOR | NFR-002 | `src/components/sections/MobileMenu.tsx:66-70` | クリックのハンドラーの中で見出しにフォーカスしても、続くフラグメント移動でフォーカスが外れる。`issue40.spec.ts` の keyboard のテストが `Received: inactive` で失敗する | A-003 の受け入れ条件を満たしていない | ナビゲーションが終わってからフォーカスする（次のフレーム、または `hashchange` のあと） | RESOLVED（b18e0d4） |
 | F-004 | MINOR | QA-001 | `tests/e2e/issue40.spec.ts:87`, 1行目 | URL を `http://127.0.0.1:4173/` に固定している。ファイルの先頭に BOM がある | `baseURL` を変えたときに、古いサーバーなど別の対象を検査してしまう | `test.use({ javaScriptEnabled: false })` と `page.goto('/')`。BOM を取り除く | RESOLVED（b18e0d4） |
+| F-005 | MINOR | QA-001 | `tests/e2e/issue40.spec.ts:15` | `boundingBox()` が自動で待たないため、ハイドレーションで要素が差し替わる瞬間に null を返す。`--repeat-each=10` で 1 / 80 が失敗 | CI がまれに理由なく失敗する | `toBeVisible()` のあと `expect.poll` で高さを待つ | RESOLVED（bfe0422） |
 
 ## 4. 再レビュー履歴
 | 日時 | 修正コミット | 指摘ID | 再検証内容・結果 | 判定 |
 |---|---|---|---|---|
 | 2026-10-29 | b18e0d4 | F-001〜F-004 | format / lint / typecheck / unit（73 passed）/ build PASS。E2E 全件 39 passed（Chrome、新しいサーバー 4211）。F-001: wave のとき `.paw` が running。F-003: キーボードで移動後に Contact の見出しにフォーカス。F-004: 固定 URL と BOM がなくなった。**F-002: 48px のしきい値では、スムーズスクロールの途中に開くと閉じる。`FR-011 --repeat-each=15` で 7 / 30 失敗（375px）** → `wheel` で閉じる方式に変えるよう依頼 | REQUEST_CHANGES |
+| 2026-10-29 | 440d654 | F-002 | `scroll` をやめて `wheel` で閉じる方式に変更。E2E 全件 39 passed、`FR-011 --repeat-each=10` で失敗 0。新たに F-005（CTA のテストの不安定さ、1 / 80）を見つけた | REQUEST_CHANGES（F-005 のため） |
+| 2026-10-29 | bfe0422 | F-005 | format / lint / typecheck / unit（73 passed）/ build PASS。新しくビルドし直したサーバー（4211）で E2E 全件 39 passed、`-g "FR-011|header CTA stays" --repeat-each=15` で 165 passed / 0 failed（Chrome 155、`channel: chrome`）。途中、Codex がビルドをやり直したために古い CSP ヘッダーのサーバーで 12 件失敗した実行があったが、環境の問題としてやり直した | APPROVE |
 
 ## 5. 判断と残存リスク
-- 未解決のBLOCKER/MAJOR: F-002
+- 未解決のBLOCKER/MAJOR: なし
 - 例外・リスク受容（承認者と理由）: なし
-- 未検証事項: Lighthouse（CLS / Performance）、実機（iOS Safari の慣性スクロールでのメニュー）、スクリーンリーダー
-- 次のアクション: Codex に F-001〜F-004 の修正を依頼し、再レビューする
+- 未検証事項: Lighthouse（CLS / Performance。CI で確認）、実機（iOS Safari の慣性スクロールとタッチでのメニュー）、Chrome 以外のブラウザ、スクリーンリーダー
+- 次のアクション: GitHub Actions の結果を確認する。オーナーのマージ承認を待つ（ベースは PR #38 のブランチ）。Codex のサンドボックスから `.git` に書き込めない件と、Windows で `CreateProcessWithLogonW failed: 1909` が出て Codex の実行が途中で止まった件は、運用上の課題として残す
 - 本番デプロイ承認: 未取得
 
 > 記録には秘密情報・個人情報・本番トークンを記載しない。検証していない事項をPASSにしない。
