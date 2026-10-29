@@ -21,8 +21,8 @@ Claude Code が各PRで更新する。仕様書（`docs/requirements.md`）の�
 | FR-010 | 静的配信（export + Workers Static Assets） | `next.config.ts`, `wrangler.jsonc` | build（CI）、E2E（404 / JS なし）、`wrangler dev --local` での確認 | #22 / REV-002 | 合格（PR未マージ）。本番デプロイは未実施 |
 | FR-011 | セクション構成 | `src/components/sections/*`, `MobileMenu.tsx` | E2E「FR-011: navigation reaches every section」（375 / 1440） | #23 / REV-003、#26 / REV-006 | 合格（PR未マージ） |
 | NFR-001 | アクセシビリティ（WCAG 2.2 AA を目標） | 全UI | E2E の axe（serious / critical 0 件）、Lighthouse A11y 1.00 | #23 / REV-003、#26 / REV-006 | 合格（PR未マージ）。**自動検査のみ。手動の検査とスクリーンリーダーでの確認は未実施で、適合は主張しない** |
-| NFR-002 | キーボード操作 | `globals.css`（フォーカス）、`MobileMenu.tsx` | E2E「NFR-002: skip link…」、`tests/unit/mobile-menu.test.tsx` | #26 / REV-006 | 合格（PR未マージ） |
-| NFR-003 | 320〜1440px で崩れない | 全UI | E2E「NFR-003: no horizontal overflow」 | #23 / REV-003、#26 | 合格（PR未マージ） |
+| NFR-002 | キーボード操作 | `globals.css`（フォーカス）、`MobileMenu.tsx` | E2E「NFR-002: skip link…」、`tests/unit/mobile-menu.test.tsx` | #26 / REV-006、#39 / REV-20261029-001 | 合格（PR未マージ）。UX監査の MINOR（A-002 / A-003：メニューの閉じ方とフォーカス）は #40 で対応 |
+| NFR-003 | 320〜1440px で崩れない | 全UI | E2E「NFR-003: no horizontal overflow」 | #23 / REV-003、#26、#39 / REV-20261029-001 | 合格（PR未マージ）。横スクロールなし。UX監査の MINOR（A-001：320px でヘッダーの CTA が折り返す、A-004：見出しの改行）は #40 で対応 |
 | NFR-004 | 性能（LCP ≤ 2.5s、CLS ≤ 0.1、INP ≤ 200ms） | — | Lighthouse CI（モバイル、ラボ）: LCP 2.27〜2.43s、CLS 0.000 | #26 / REV-006 | 合格（PR未マージ）。**フィールドの値と INP は未測定** |
 | NFR-005 | 型品質 | `tsconfig.json`（strict + noUncheckedIndexedAccess） | CI typecheck | #22 / REV-002 | 合格（PR未マージ） |
 | NFR-006 | 静的解析 | `eslint.config.mjs`, `.prettierrc.json`, `.gitattributes` | CI の lint / format:check | #22 / REV-002 | 合格（PR未マージ） |
