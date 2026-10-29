@@ -54,6 +54,11 @@
     outline: 2px solid var(--color-accent);
     outline-offset: 3px;
   }
+  h1,
+  h2 {
+    word-break: auto-phrase;
+    text-wrap: balance;
+  }
   h1 {
     font-size: clamp(2.75rem, 8vw, 6.5rem);
     line-height: 1.02;
@@ -398,6 +403,12 @@
   }
 }
 @media (prefers-reduced-motion: no-preference) {
+  .fox-character {
+    animation: fox-enter 600ms var(--ease-out-expo);
+  }
+  .fox-character .paw {
+    animation: fox-wave 700ms ease-in-out 600ms;
+  }
   .fox-character[data-ready='true'] .body {
     animation: fox-breathe 4s ease-in-out infinite;
   }
@@ -469,5 +480,16 @@
   }
   50% {
     transform: rotate(12deg);
+  }
+}
+
+@keyframes fox-enter {
+  from {
+    transform: translateY(16px) scale(0.9);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
   }
 }

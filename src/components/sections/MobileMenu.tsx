@@ -6,6 +6,7 @@ import { navigation } from '@/config/navigation';
 
 export function MobileMenu() {
   const [open, setOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
@@ -19,11 +20,27 @@ export function MobileMenu() {
     }
 
     document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
+    function handlePointerDown(event: PointerEvent) {
+      if (
+        event.target instanceof Node &&
+        !menuRef.current?.contains(event.target)
+      )
+        setOpen(false);
+    }
+    function handleScroll() {
+      setOpen(false);
+    }
+    document.addEventListener('pointerdown', handlePointerDown);
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener('pointerdown', handlePointerDown);
+      window.removeEventListener('scroll', handleScroll);
+    };
   }, [open]);
 
   return (
-    <div className="relative md:hidden">
+    <div ref={menuRef} className="relative shrink-0 md:hidden">
       <button
         ref={buttonRef}
         type="button"
@@ -46,7 +63,12 @@ export function MobileMenu() {
               key={item.id}
               href={'#' + item.id}
               className="interactive flex min-h-11 min-w-11 items-center px-2 text-ink-muted hover:text-accent"
-              onClick={() => setOpen(false)}
+              onClick={() => {
+                setOpen(false);
+                document
+                  .getElementById(item.id + '-heading')
+                  ?.focus({ preventScroll: true });
+              }}
             >
               {item.label}
             </a>

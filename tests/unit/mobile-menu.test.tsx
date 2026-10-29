@@ -1,5 +1,5 @@
 import { fireEvent, render, screen, within } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { MobileMenu } from '@/components/sections/MobileMenu';
 import { navigation } from '@/config/navigation';
 
@@ -50,6 +50,13 @@ describe('REV-20261024-006 F-001 / NFR-001, NFR-002: MobileMenu', () => {
   });
 
   it('F-004 / NFR-002: closes on link click without forcing focus to the button', () => {
+    const { unmount } = render(
+      <h2 id="contact-heading" tabIndex={-1}>
+        Contact heading
+      </h2>,
+    );
+    const heading = screen.getByRole('heading');
+    const focus = vi.spyOn(heading, 'focus');
     const button = renderMenu();
     fireEvent.click(button);
     const link = screen.getByRole('link', { name: 'Contact' });
@@ -58,6 +65,36 @@ describe('REV-20261024-006 F-001 / NFR-001, NFR-002: MobileMenu', () => {
     expect(button).toHaveAttribute('aria-expanded', 'false');
     expect(document.getElementById('mobile-nav')).toBeNull();
     expect(screen.queryByRole('link')).not.toBeInTheDocument();
-    expect(button).not.toHaveFocus();
+    expect(heading).toHaveFocus();
+    expect(focus).toHaveBeenCalledWith({ preventScroll: true });
+    unmount();
+  });
+});
+
+describe('Issue #40 NFR-002 dismissal lifecycle', () => {
+  it('ignores inside pointerdown, closes outside and removes open listeners', () => {
+    const remove = vi.spyOn(document, 'removeEventListener');
+    render(<MobileMenu />);
+    const button = screen.getByRole('button');
+    fireEvent.click(button);
+    fireEvent.pointerDown(screen.getByRole('link', { name: 'Services' }));
+    expect(button).toHaveAttribute('aria-expanded', 'true');
+    fireEvent.pointerDown(document.body);
+    expect(button).toHaveAttribute('aria-expanded', 'false');
+    expect(remove).toHaveBeenCalledWith('pointerdown', expect.any(Function));
+    expect(remove).toHaveBeenCalledWith('keydown', expect.any(Function));
+  });
+  it('closes on scroll and cleans up on unmount', () => {
+    const remove = vi.spyOn(window, 'removeEventListener');
+    const { unmount } = render(<MobileMenu />);
+    const button = screen.getByRole('button');
+    fireEvent.click(button);
+    fireEvent.scroll(window);
+    expect(button).toHaveAttribute('aria-expanded', 'false');
+    expect(remove).toHaveBeenCalledWith('scroll', expect.any(Function));
+    fireEvent.click(button);
+    remove.mockClear();
+    unmount();
+    expect(remove).toHaveBeenCalledWith('scroll', expect.any(Function));
   });
 });

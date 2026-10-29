@@ -182,7 +182,7 @@ export function InteractiveCharacter() {
       ref={ref}
       type="button"
       aria-label="きつねのマスコット。押すとリアクションします"
-      className="fox-character mx-auto block aspect-square w-full max-w-[22rem] cursor-pointer rounded-3xl focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent"
+      className="fox-character mx-auto block aspect-square w-full max-w-[10rem] md:max-w-[22rem] cursor-pointer rounded-3xl focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent"
       data-ready="false"
       data-blinking={blinking}
       data-reaction={reaction}
