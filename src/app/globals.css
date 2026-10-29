@@ -407,7 +407,7 @@
     animation: fox-enter 600ms var(--ease-out-expo);
   }
   .fox-character .paw {
-    animation: fox-wave 700ms ease-in-out 600ms;
+    animation: fox-greet 700ms ease-in-out 600ms;
   }
   .fox-character[data-ready='true'] .body {
     animation: fox-breathe 4s ease-in-out infinite;
@@ -433,7 +433,9 @@
     animation: fox-wave 500ms ease-in-out;
   }
   .fox-character[data-reaction='wave'] .paw {
-    animation: fox-wave 700ms ease-in-out;
+    animation:
+      fox-greet 700ms ease-in-out 600ms,
+      fox-wave 700ms ease-in-out;
   }
   .fox-character[data-reaction='jump'] .fox-reaction {
     animation: fox-hop 600ms ease-in-out;
@@ -474,6 +476,15 @@
   }
 }
 @keyframes fox-wave {
+  25%,
+  75% {
+    transform: rotate(-12deg);
+  }
+  50% {
+    transform: rotate(12deg);
+  }
+}
+@keyframes fox-greet {
   25%,
   75% {
     transform: rotate(-12deg);

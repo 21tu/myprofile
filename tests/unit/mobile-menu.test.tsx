@@ -1,4 +1,10 @@
-import { fireEvent, render, screen, within } from '@testing-library/react';
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { MobileMenu } from '@/components/sections/MobileMenu';
 import { navigation } from '@/config/navigation';
@@ -49,7 +55,7 @@ describe('REV-20261024-006 F-001 / NFR-001, NFR-002: MobileMenu', () => {
     expect(button).toHaveFocus();
   });
 
-  it('F-004 / NFR-002: closes on link click without forcing focus to the button', () => {
+  it('F-004 / NFR-002: closes on link click without forcing focus to the button', async () => {
     const { unmount } = render(
       <h2 id="contact-heading" tabIndex={-1}>
         Contact heading
@@ -65,7 +71,7 @@ describe('REV-20261024-006 F-001 / NFR-001, NFR-002: MobileMenu', () => {
     expect(button).toHaveAttribute('aria-expanded', 'false');
     expect(document.getElementById('mobile-nav')).toBeNull();
     expect(screen.queryByRole('link')).not.toBeInTheDocument();
-    expect(heading).toHaveFocus();
+    await waitFor(() => expect(heading).toHaveFocus());
     expect(focus).toHaveBeenCalledWith({ preventScroll: true });
     unmount();
   });
@@ -84,17 +90,27 @@ describe('Issue #40 NFR-002 dismissal lifecycle', () => {
     expect(remove).toHaveBeenCalledWith('pointerdown', expect.any(Function));
     expect(remove).toHaveBeenCalledWith('keydown', expect.any(Function));
   });
-  it('closes on scroll and cleans up on unmount', () => {
-    const remove = vi.spyOn(window, 'removeEventListener');
-    const { unmount } = render(<MobileMenu />);
-    const button = screen.getByRole('button');
-    fireEvent.click(button);
-    fireEvent.scroll(window);
-    expect(button).toHaveAttribute('aria-expanded', 'false');
-    expect(remove).toHaveBeenCalledWith('scroll', expect.any(Function));
-    fireEvent.click(button);
-    remove.mockClear();
-    unmount();
-    expect(remove).toHaveBeenCalledWith('scroll', expect.any(Function));
-  });
+  it.each([48, -48])(
+    'closes after moving %ipx from the opening position and cleans up',
+    (distance) => {
+      const remove = vi.spyOn(window, 'removeEventListener');
+      const { unmount } = render(<MobileMenu />);
+      const button = screen.getByRole('button');
+      vi.spyOn(window, 'scrollY', 'get').mockReturnValue(200);
+      fireEvent.click(button);
+      vi.spyOn(window, 'scrollY', 'get').mockReturnValue(
+        200 + Math.sign(distance) * 47,
+      );
+      fireEvent.scroll(window);
+      expect(button).toHaveAttribute('aria-expanded', 'true');
+      vi.spyOn(window, 'scrollY', 'get').mockReturnValue(200 + distance);
+      fireEvent.scroll(window);
+      expect(button).toHaveAttribute('aria-expanded', 'false');
+      expect(remove).toHaveBeenCalledWith('scroll', expect.any(Function));
+      fireEvent.click(button);
+      remove.mockClear();
+      unmount();
+      expect(remove).toHaveBeenCalledWith('scroll', expect.any(Function));
+    },
+  );
 });

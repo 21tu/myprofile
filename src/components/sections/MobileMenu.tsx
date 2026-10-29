@@ -27,8 +27,9 @@ export function MobileMenu() {
       )
         setOpen(false);
     }
+    const openedAtScrollY = window.scrollY;
     function handleScroll() {
-      setOpen(false);
+      if (Math.abs(window.scrollY - openedAtScrollY) >= 48) setOpen(false);
     }
     document.addEventListener('pointerdown', handlePointerDown);
     window.addEventListener('scroll', handleScroll, { passive: true });
@@ -65,9 +66,11 @@ export function MobileMenu() {
               className="interactive flex min-h-11 min-w-11 items-center px-2 text-ink-muted hover:text-accent"
               onClick={() => {
                 setOpen(false);
-                document
-                  .getElementById(item.id + '-heading')
-                  ?.focus({ preventScroll: true });
+                requestAnimationFrame(() => {
+                  document
+                    .getElementById(item.id + '-heading')
+                    ?.focus({ preventScroll: true });
+                });
               }}
             >
               {item.label}

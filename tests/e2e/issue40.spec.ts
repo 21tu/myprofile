@@ -1,4 +1,4 @@
-﻿import { expect, test } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
 for (const colorScheme of ['light', 'dark'] as const) {
   for (const width of [320, 375, 768, 1440]) {
@@ -75,22 +75,50 @@ test.describe('Issue #40 mobile', () => {
     await fox.click();
     await expect(fox).toHaveAttribute('data-reaction', 'jump');
   });
-  test('FR-002 UX-002: CSS entrance finishes without JavaScript', async ({
-    browser,
+  test('FR-008: wave runs after the entrance greeting has finished', async ({
+    page,
   }) => {
-    const context = await browser.newContext({
-      javaScriptEnabled: false,
-      viewport: { width: 375, height: 740 },
-    });
-    try {
-      const page = await context.newPage();
-      await page.goto('http://127.0.0.1:4173/');
-      const fox = page.locator('.fox-character');
-      await expect(fox).toHaveCSS('opacity', '1');
-      await expect(fox).toHaveCSS('transform', 'none');
-      await expect(fox).toBeInViewport({ ratio: 1 });
-    } finally {
-      await context.close();
+    await page.goto('/');
+    const fox = page.locator('.fox-character');
+    await expect(fox).toHaveAttribute('data-ready', 'true');
+    const paw = fox.locator('.paw');
+    await expect
+      .poll(() => paw.evaluate((element) => element.getAnimations().length))
+      .toBe(0);
+    for (let i = 0; i < 3; i++) {
+      await fox.evaluate((element) => {
+        if (element instanceof HTMLButtonElement) element.click();
+      });
+      await expect(fox).toHaveAttribute('data-reaction', 'idle');
     }
+    await fox.click();
+    await expect(fox).toHaveAttribute('data-reaction', 'wave');
+    await expect
+      .poll(() =>
+        paw.evaluate((element) =>
+          element
+            .getAnimations()
+            .some(
+              (animation) =>
+                animation instanceof CSSAnimation &&
+                animation.animationName === 'fox-wave' &&
+                animation.playState === 'running',
+            ),
+        ),
+      )
+      .toBe(true);
+  });
+});
+
+test.describe('Issue #40 without JavaScript', () => {
+  test.use({ javaScriptEnabled: false, viewport: { width: 375, height: 740 } });
+  test('FR-002 UX-002: CSS entrance finishes without JavaScript', async ({
+    page,
+  }) => {
+    await page.goto('/');
+    const fox = page.locator('.fox-character');
+    await expect(fox).toHaveCSS('opacity', '1');
+    await expect(fox).toHaveCSS('transform', 'none');
+    await expect(fox).toBeInViewport({ ratio: 1 });
   });
 });
